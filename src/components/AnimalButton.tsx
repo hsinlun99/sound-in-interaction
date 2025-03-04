@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
 interface AnimalButtonProps {
@@ -9,6 +9,8 @@ interface AnimalButtonProps {
 
 const AnimalButton: React.FC<AnimalButtonProps> = ({ imagePath, audioPath, audioContext }) => {
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
+  const sourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
 
   useEffect(() => {
     fetch(audioPath)
@@ -19,16 +21,42 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({ imagePath, audioPath, audio
   }, [audioPath, audioContext]);
 
   const playAudio = () => {
-    if (!audioBuffer) return;
+    if (!audioBuffer || sourceRef.current) return;
 
     const source = audioContext.createBufferSource();
     source.buffer = audioBuffer;
-    source.connect(audioContext.destination);
+
+    const gainNode = audioContext.createGain();
+    gainNode.gain.value = 0;
+
+    source.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
     source.start();
+    sourceRef.current = source;
+    gainNodeRef.current = gainNode;
+  };
+
+  const handleMouseEnter = () => {
+    if (!sourceRef.current || !gainNodeRef.current) {
+      playAudio();
+    } else {
+      gainNodeRef.current.gain.setTargetAtTime(1, audioContext.currentTime, 0.1);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (gainNodeRef.current) {
+      gainNodeRef.current.gain.setTargetAtTime(0, audioContext.currentTime, 0.1);
+    }
   };
 
   return (
-    <button onClick={playAudio} style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}>
+    <button
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
+    >
       <Image src={imagePath} alt="Animal" width={100} height={100} priority />
     </button>
   );
