@@ -27,6 +27,7 @@ export default function Home() {
           width={0}
           height={0}
           sizes="100vh"
+          priority
         />
         <div className="absolute top-[20%] left-[40%]">
           <AnimalButton imagePath="/image/animal-eagle.svg" audioPath="/audio/outfoxing.mp3" audioContext={audioContext} />
