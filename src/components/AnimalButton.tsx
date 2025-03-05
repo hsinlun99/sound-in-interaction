@@ -25,73 +25,77 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({ imagePath, audioPaths, audi
           })
         );
         setAudioBuffers(buffers);
+        console.log(`Loaded ${buffers.length} audio files for ${imagePath}`);
       } catch (err) {
         console.error("Error loading audio files:", err);
       }
     };
 
     loadAudios();
-  }, [audioPaths, audioContext]);
-
+    
+    return () => {
+      if (sourceRef.current) {
+        sourceRef.current.stop();
+      }
+    };
+  }, [audioPaths, audioContext, imagePath]);
 
   const playAudio = () => {
+    if (audioBuffers.length === 0) return;
+    
     // Stop current audio if playing
     if (sourceRef.current) {
       sourceRef.current.stop();
       sourceRef.current = null;
-      gainNodeRef.current = null;
     }
 
-    // Return if no audio buffers loaded yet
-    if (audioBuffers.length === 0) return;
+    try {
+      const source = audioContext.createBufferSource();
+      source.buffer = audioBuffers[currentAudioIndex];
 
-    const source = audioContext.createBufferSource();
-    source.buffer = audioBuffers[currentAudioIndex];
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = 1; // Full volume immediately
 
-    const gainNode = audioContext.createGain();
-    gainNode.gain.value = 0;
+      source.connect(gainNode);
+      gainNode.connect(audioContext.destination);
 
-    source.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+      source.start(0);
+      sourceRef.current = source;
+      gainNodeRef.current = gainNode;
 
-    source.start();
-    sourceRef.current = source;
-    gainNodeRef.current = gainNode;
-
-    // Set up event listener for when audio ends
-    source.onended = () => {
-      sourceRef.current = null;
-      gainNodeRef.current = null;
-    };
+      console.log(`Playing audio ${currentAudioIndex + 1} of ${audioBuffers.length}`);
+      
+      // Set up event listener for when audio ends
+      source.onended = () => {
+        sourceRef.current = null;
+        gainNodeRef.current = null;
+      };
+    } catch (err) {
+      console.error("Error playing audio:", err);
+    }
   };
 
   const handleMouseEnter = () => {
-    if (!sourceRef.current || !gainNodeRef.current) {
-      playAudio();
-    } else {
-      gainNodeRef.current.gain.setTargetAtTime(1, audioContext.currentTime, 0.1);
-    }
+    playAudio();
   };
 
   const handleMouseLeave = () => {
-    if (gainNodeRef.current) {
-      gainNodeRef.current.gain.setTargetAtTime(0, audioContext.currentTime, 0.1);
+    if (sourceRef.current) {
+      sourceRef.current.stop();
+      sourceRef.current = null;
+      gainNodeRef.current = null;
     }
   };
 
   const handleClick = () => {
-    // Cycle to next audio in the list
     setCurrentAudioIndex((prevIndex) => (prevIndex + 1) % audioBuffers.length);
-
-    // Stop current audio if playing
+    
     if (sourceRef.current) {
       sourceRef.current.stop();
       sourceRef.current = null;
-      gainNodeRef.current = null;
     }
-
-    // Play the new audio if mouse is still over button
-    setTimeout(playAudio, 10);
+    
+    playAudio();
   };
 
   return (
@@ -99,9 +103,14 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({ imagePath, audioPaths, audi
       onClick={handleClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
+      style={{ 
+        background: "none", 
+        border: "none", 
+        padding: 0, 
+        cursor: "pointer"
+      }}
     >
-      <Image src={imagePath} alt={`Animal button of ${imagePath}`} width={100} height={100} priority />
+      <Image src={imagePath} alt="Animal" width={100} height={100} priority />
     </button>
   );
 };
