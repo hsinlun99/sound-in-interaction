@@ -1,0 +1,38 @@
+[
+  {
+    "id": "eagle",
+    "position": {
+      "top": "20%",
+      "left": "40%"
+    },
+    "image": "/image/animal-eagle.svg",
+    "audioFiles": [
+      "/audio/eagle1.mp3",
+      "/audio/eagle2.mp3"
+    ]
+  },
+  {
+    "id": "goose",
+    "position": {
+      "top": "50%",
+      "left": "45%"
+    },
+    "image": "/image/animal-goose.svg",
+    "audioFiles": [
+      "/audio/goose1.mp3",
+      "/audio/goose2.mp3"
+    ]
+  },
+  {
+    "id": "wolverine",
+    "position": {
+      "top": "60%",
+      "left": "10%"
+    },
+    "image": "/image/animal-wolverine.svg",
+    "audioFiles": [
+      "/audio/wolverine1.mp3",
+      "/audio/wolverine2.mp3"
+    ]
+  }
+]

@@ -1,11 +1,29 @@
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AnimalButton from "@/components/AnimalButton";
 import StartButton from "@/components/StartButton";
 
-export default function Home() {
+interface Animal {
+  id: string;
+  position: {
+    top: string;
+    left: string;
+  };
+  image: string;
+  audioFiles: string[];
+}
 
+export default function Home() {
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const [animals, setAnimals] = useState<Animal[]>([]);
+
+  useEffect(() => {
+    // Fetch animal data
+    fetch("/data/animals-data.json")
+      .then(res => res.json())
+      .then(data => setAnimals(data))
+      .catch(err => console.error("Error loading animal data:", err));
+  }, []);
 
   const handleStart = () => {
     if (!audioContext) {
@@ -15,7 +33,6 @@ export default function Home() {
       context.resume().then(() => {
         console.log("AudioContext is resumed and ready");
       });
-
     }
   };
 
@@ -33,22 +50,26 @@ export default function Home() {
         />
 
         {!audioContext && (
-          <div className="absolute top-[50%] left-[50%]">
+          <div className="absolute top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2">
             <StartButton onClick={handleStart} />
           </div>
         )}
 
-        {audioContext && (
+        {audioContext && animals.length > 0 && (
           <>
-            <div className="absolute top-[20%] left-[40%]">
-              <AnimalButton imagePath="/image/animal-eagle.svg" audioPath="/audio/outfoxing.mp3" audioContext={audioContext} />
-            </div>
-            <div className="absolute top-[50%] left-[45%]">
-              <AnimalButton imagePath="/image/animal-goose.svg" audioPath="/audio/outfoxing.mp3" audioContext={audioContext} />
-            </div>
-            <div className="absolute top-[60%] left-[10%]">
-              <AnimalButton imagePath="/image/animal-wolverine.svg" audioPath="/audio/outfoxing.mp3" audioContext={audioContext} />
-            </div>
+            {animals.map((animal) => (
+              <div 
+                key={animal.id} 
+                className="absolute" 
+                style={{ top: animal.position.top, left: animal.position.left }}
+              >
+                <AnimalButton 
+                  imagePath={animal.image} 
+                  audioPaths={animal.audioFiles} 
+                  audioContext={audioContext} 
+                />
+              </div>
+            ))}
           </>
         )}
       </div>
