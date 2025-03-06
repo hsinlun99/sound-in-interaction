@@ -5,14 +5,22 @@ interface AnimalButtonProps {
   imagePath: string;
   audioPaths: string[];
   audioContext: AudioContext;
+  inactivityTimeout?: number; // Time in milliseconds before resetting to first audio
 }
 
-const AnimalButton: React.FC<AnimalButtonProps> = ({ imagePath, audioPaths, audioContext }) => {
+const AnimalButton: React.FC<AnimalButtonProps> = ({ 
+  imagePath, 
+  audioPaths, 
+  audioContext,
+  inactivityTimeout = 5000 // 5 secondes
+}) => {
   const [audioBuffers, setAudioBuffers] = useState<AudioBuffer[]>([]);
   const [currentAudioIndex, setCurrentAudioIndex] = useState<number>(0);
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
   const gainNodeRef = useRef<GainNode | null>(null);
   const isHoveringRef = useRef<boolean>(false);
+  const timerIdRef = useRef<number | null>(null);
+  const currentIndexRef = useRef<number>(0); // Track current index in a ref too
 
   useEffect(() => {
     // Load all audio files
@@ -36,8 +44,14 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({ imagePath, audioPaths, audi
     
     return () => {
       stopAudio();
+      clearResetTimer();
     };
   }, [audioPaths, audioContext, imagePath]);
+
+  // When currentAudioIndex changes, update the ref
+  useEffect(() => {
+    currentIndexRef.current = currentAudioIndex;
+  }, [currentAudioIndex]);
 
   // Function to stop currently playing audio
   const stopAudio = () => {
@@ -45,6 +59,39 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({ imagePath, audioPaths, audi
       sourceRef.current.stop();
       sourceRef.current = null;
       gainNodeRef.current = null;
+    }
+  };
+
+  // Function to clear the inactivity timer
+  const clearResetTimer = () => {
+    console.log("Clearing reset timer");
+    if (timerIdRef.current !== null) {
+      window.clearTimeout(timerIdRef.current);
+      timerIdRef.current = null;
+    }
+  };
+
+  // Function to start/restart the inactivity timer
+  const startResetTimer = () => {
+    // Clear any existing timer first
+    clearResetTimer();
+    
+    // Only start a timer if we're not at index 0
+    if (currentIndexRef.current !== 0) {
+      console.log(`Starting reset timer (${inactivityTimeout}ms)`);
+      
+      // Use window.setTimeout and store the numeric ID
+      timerIdRef.current = window.setTimeout(() => {
+        console.log("Inactivity timeout: Resetting to first audio");
+        setCurrentAudioIndex(0);
+        
+        // If currently hovering, play the first audio
+        if (isHoveringRef.current) {
+          playAudioWithIndex(0);
+        }
+        
+        timerIdRef.current = null;
+      }, inactivityTimeout);
     }
   };
 
@@ -80,7 +127,7 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({ imagePath, audioPaths, audi
           
           // If user is still hovering, play the hover audio again
           if (isHoveringRef.current) {
-            playAudioWithIndex(currentAudioIndex);
+            playAudioWithIndex(currentIndexRef.current);
           }
         }
       };
@@ -89,13 +136,9 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({ imagePath, audioPaths, audi
     }
   };
 
-  const playCurrentAudio = () => {
-    playAudioWithIndex(currentAudioIndex);
-  };
-
   const handleMouseEnter = () => {
     isHoveringRef.current = true;
-    playCurrentAudio();
+    playAudioWithIndex(currentIndexRef.current);
   };
 
   const handleMouseLeave = () => {
@@ -106,12 +149,17 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({ imagePath, audioPaths, audi
   const handleClick = () => {
     // Calculate new index
     const newIndex = (currentAudioIndex + 1) % audioBuffers.length;
+    console.log(`Clicking: changing index from ${currentAudioIndex} to ${newIndex}`);
     
     // Update state with new index
     setCurrentAudioIndex(newIndex);
+    currentIndexRef.current = newIndex; // Update ref immediately too
     
     // Play the new audio (this will stop any currently playing audio)
     playAudioWithIndex(newIndex);
+    
+    // Restart the inactivity timer
+    startResetTimer();
   };
 
   return (
