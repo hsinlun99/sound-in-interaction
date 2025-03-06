@@ -12,6 +12,7 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({ imagePath, audioPaths, audi
   const [currentAudioIndex, setCurrentAudioIndex] = useState<number>(0);
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
   const gainNodeRef = useRef<GainNode | null>(null);
+  const isHoveringRef = useRef<boolean>(false);
 
   useEffect(() => {
     // Load all audio files
@@ -34,24 +35,29 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({ imagePath, audioPaths, audi
     loadAudios();
     
     return () => {
-      if (sourceRef.current) {
-        sourceRef.current.stop();
-      }
+      stopAudio();
     };
   }, [audioPaths, audioContext, imagePath]);
 
-  const playAudio = () => {
-    if (audioBuffers.length === 0) return;
-    
-    // Stop current audio if playing
+  // Function to stop currently playing audio
+  const stopAudio = () => {
     if (sourceRef.current) {
       sourceRef.current.stop();
       sourceRef.current = null;
+      gainNodeRef.current = null;
     }
+  };
+
+  // Function to play audio with specified index
+  const playAudioWithIndex = (index: number) => {
+    if (audioBuffers.length === 0) return;
+    
+    // Always stop current audio before playing new one
+    stopAudio();
 
     try {
       const source = audioContext.createBufferSource();
-      source.buffer = audioBuffers[currentAudioIndex];
+      source.buffer = audioBuffers[index];
 
       const gainNode = audioContext.createGain();
       gainNode.gain.value = 1; // Full volume immediately
@@ -63,39 +69,49 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({ imagePath, audioPaths, audi
       sourceRef.current = source;
       gainNodeRef.current = gainNode;
 
-      console.log(`Playing audio ${currentAudioIndex + 1} of ${audioBuffers.length}`);
+      console.log(`Playing audio ${index + 1} of ${audioBuffers.length}`);
       
       // Set up event listener for when audio ends
       source.onended = () => {
-        sourceRef.current = null;
-        gainNodeRef.current = null;
+        // Only clear refs if we haven't already stopped this source
+        if (sourceRef.current === source) {
+          sourceRef.current = null;
+          gainNodeRef.current = null;
+          
+          // If user is still hovering, play the hover audio again
+          if (isHoveringRef.current) {
+            playAudioWithIndex(currentAudioIndex);
+          }
+        }
       };
     } catch (err) {
       console.error("Error playing audio:", err);
     }
   };
 
+  const playCurrentAudio = () => {
+    playAudioWithIndex(currentAudioIndex);
+  };
+
   const handleMouseEnter = () => {
-    playAudio();
+    isHoveringRef.current = true;
+    playCurrentAudio();
   };
 
   const handleMouseLeave = () => {
-    if (sourceRef.current) {
-      sourceRef.current.stop();
-      sourceRef.current = null;
-      gainNodeRef.current = null;
-    }
+    isHoveringRef.current = false;
+    stopAudio();
   };
 
   const handleClick = () => {
-    setCurrentAudioIndex((prevIndex) => (prevIndex + 1) % audioBuffers.length);
+    // Calculate new index
+    const newIndex = (currentAudioIndex + 1) % audioBuffers.length;
     
-    if (sourceRef.current) {
-      sourceRef.current.stop();
-      sourceRef.current = null;
-    }
+    // Update state with new index
+    setCurrentAudioIndex(newIndex);
     
-    playAudio();
+    // Play the new audio (this will stop any currently playing audio)
+    playAudioWithIndex(newIndex);
   };
 
   return (
