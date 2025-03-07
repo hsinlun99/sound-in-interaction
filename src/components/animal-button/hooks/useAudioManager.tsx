@@ -54,15 +54,14 @@ export const useAudioManager = ({
     };
   }, [audioPaths, audioContext, imagePath, setIsLoading, stopAudio]);
 
-  const playAudioWithIndex = useCallback((index: number) => {
-    if (audioBuffers.length === 0) return;
+  const playAudioWithIndex = useCallback((index: number): AnalyserNode | undefined => {
+    if (audioBuffers.length === 0) return undefined;
 
     stopAudio();
 
     try {
       const source = audioContext.createBufferSource();
       source.buffer = audioBuffers[index];
-
 
       const analyser = audioContext.createAnalyser();
       analyser.fftSize = 128;
@@ -71,7 +70,6 @@ export const useAudioManager = ({
 
       const gainNode = audioContext.createGain();
       gainNode.gain.value = 1;
-
 
       source.connect(analyser);
       analyser.connect(gainNode);
@@ -83,26 +81,25 @@ export const useAudioManager = ({
 
       console.log(`Playing audio ${index + 1} of ${audioBuffers.length}`);
 
-
       source.onended = () => {
-
         if (sourceRef.current === source) {
           sourceRef.current = null;
           gainNodeRef.current = null;
           analyserRef.current = null;
         }
       };
+      
+      return analyser;
     } catch (err) {
       console.error("Error playing audio:", err);
+      return undefined;
     }
-
-    return analyserRef.current;
   }, [audioBuffers, audioContext, stopAudio]);
 
   return {
     audioBuffers,
     playAudioWithIndex,
     stopAudio,
-    analyserRef
+    analyserNode: analyserRef.current
   };
 };

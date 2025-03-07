@@ -1,11 +1,11 @@
 import { useCallback, useRef, RefObject } from 'react';
 
 interface UseInactivityTimerProps {
-  currentIndexRef: RefObject<number> & {current: number};
+  currentIndexRef: RefObject<number>;
   inactivityTimeout: number;
   isFrozen: boolean;
   setCurrentAudioIndex: React.Dispatch<React.SetStateAction<number>>;
-  playAudioWithIndex: (index: number) => AnalyserNode | null | undefined | void;
+  playAudioWithIndex: (index: number) => AnalyserNode | undefined;
   isHoveringRef: RefObject<boolean>;
 }
 
@@ -26,9 +26,7 @@ export const useInactivityTimer = ({
     }
   }, []);
 
-
   const startResetTimer = useCallback(() => {
-
     if (isFrozen) {
       console.log("Freeze active: not starting inactivity timer");
       return;
@@ -36,14 +34,12 @@ export const useInactivityTimer = ({
 
     clearResetTimer();
 
-
     if (currentIndexRef.current !== 0) {
       console.log(`Starting reset timer (${inactivityTimeout}ms)`);
 
       timerIdRef.current = window.setTimeout(() => {
         console.log("Inactivity timeout: Resetting to first audio");
         setCurrentAudioIndex(0);
-
 
         if (isHoveringRef.current) {
           playAudioWithIndex(0);

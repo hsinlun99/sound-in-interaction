@@ -19,6 +19,7 @@ export const AnimalButton: React.FC<AnimalButtonProps> = ({
   const [currentBorderColor, setCurrentBorderColor] = useState<string>(audioColors[0]);
   const isHoveringRef = useRef<boolean>(false);
   const currentIndexRef = useRef<number>(0);
+  const currentAnalyserRef = useRef<AnalyserNode | undefined>(undefined);
 
   const { 
     audioBuffers, 
@@ -31,13 +32,13 @@ export const AnimalButton: React.FC<AnimalButtonProps> = ({
     imagePath
   });
 
-
   const {
     scale,
     borderWidth,
     buttonSize,
     startAnalyzing,
-    stopAnalyzing
+    stopAnalyzing,
+    setAnalyser
   } = useAudioAnalyzer({
     audioContext,
     isHoveringRef
@@ -57,7 +58,6 @@ export const AnimalButton: React.FC<AnimalButtonProps> = ({
     setCurrentBorderColor(audioColors[currentAudioIndex]);
   }, [currentAudioIndex, audioColors]);
 
-
   useEffect(() => {
     if (isFrozen) {
       clearResetTimer();
@@ -70,31 +70,36 @@ export const AnimalButton: React.FC<AnimalButtonProps> = ({
 
   const handleMouseEnter = () => {
     isHoveringRef.current = true;
-    playAudioWithIndex(currentIndexRef.current);
-    startAnalyzing();
+    const analyser = playAudioWithIndex(currentIndexRef.current);
+    if (analyser) {
+      currentAnalyserRef.current = analyser;
+      setAnalyser(analyser);
+      startAnalyzing();
+    }
   };
 
   const handleMouseLeave = () => {
     isHoveringRef.current = false;
     stopAudio();
+    currentAnalyserRef.current = undefined;
     stopAnalyzing();
-    // 重置视觉效果通过stopAnalyzing完成
     setCurrentBorderColor(audioColors[currentIndexRef.current]);
   };
 
   const handleClick = () => {
-    // 计算新索引
     const newIndex = (currentAudioIndex + 1) % audioBuffers.length;
     console.log(`Clicking: changing index from ${currentAudioIndex} to ${newIndex}`);
     
-    // 更新状态为新索引
     setCurrentAudioIndex(newIndex);
-    currentIndexRef.current = newIndex; // 立即更新引用
+    currentIndexRef.current = newIndex;
     
-    // 播放新音频（这将停止当前正在播放的音频）
-    playAudioWithIndex(newIndex);
+    const analyser = playAudioWithIndex(newIndex);
+    if (analyser && isHoveringRef.current) {
+      currentAnalyserRef.current = analyser;
+      setAnalyser(analyser);
+      startAnalyzing();
+    }
     
-    // 重启不活动计时器（如果未冻结）
     if (!isFrozen) {
       startResetTimer();
     } else {
@@ -102,12 +107,10 @@ export const AnimalButton: React.FC<AnimalButtonProps> = ({
     }
   };
 
-  // 如果文件仍在加载，则返回加载指示器
   if (isLoading) {
     return <LoadingIndicator color={audioColors[0]} />;
   }
 
-  // 只有在加载完成后才渲染按钮
   return (
     <button
       onClick={handleClick}
