@@ -1,12 +1,12 @@
-import { useCallback, useRef, MutableRefObject } from 'react';
+import { useCallback, useRef, RefObject } from 'react';
 
 interface UseInactivityTimerProps {
-  currentIndexRef: MutableRefObject<number>;
+  currentIndexRef: RefObject<number> & {current: number};
   inactivityTimeout: number;
   isFrozen: boolean;
   setCurrentAudioIndex: React.Dispatch<React.SetStateAction<number>>;
-  playAudioWithIndex: (index: number) => AnalyserNode | undefined | void;
-  isHoveringRef: MutableRefObject<boolean>;
+  playAudioWithIndex: (index: number) => AnalyserNode | null | undefined | void;
+  isHoveringRef: RefObject<boolean>;
 }
 
 export const useInactivityTimer = ({

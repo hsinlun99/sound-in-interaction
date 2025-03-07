@@ -1,8 +1,8 @@
-import { useState, useCallback, useRef, MutableRefObject } from 'react';
+import { useState, useCallback, useRef, RefObject } from 'react';
 
 interface UseAudioAnalyzerProps {
   audioContext: AudioContext;
-  isHoveringRef: MutableRefObject<boolean>;
+  isHoveringRef: RefObject<boolean>;
 }
 
 export const useAudioAnalyzer = ({ 
