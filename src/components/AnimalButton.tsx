@@ -7,6 +7,7 @@ interface AnimalButtonProps {
   audioContext: AudioContext;
   audioColors: string[]; // Color array matching audio array exactly
   inactivityTimeout?: number;
+  isFrozen?: boolean; // New prop to control timer functionality
 }
 
 const AnimalButton: React.FC<AnimalButtonProps> = ({ 
@@ -14,7 +15,8 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
   audioPaths, 
   audioContext,
   audioColors,
-  inactivityTimeout = 5000
+  inactivityTimeout = 5000,
+  isFrozen = false // Default to false
 }) => {
   const [audioBuffers, setAudioBuffers] = useState<AudioBuffer[]>([]);
   const [currentAudioIndex, setCurrentAudioIndex] = useState<number>(0);
@@ -198,6 +200,12 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
   
   // Function to start/restart the inactivity timer
   const startResetTimer = useCallback(() => {
+    // Don't start the timer if frozen
+    if (isFrozen) {
+      console.log("Freeze active: not starting inactivity timer");
+      return;
+    }
+    
     // Clear any existing timer first
     clearResetTimer();
     
@@ -218,7 +226,21 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
         timerIdRef.current = null;
       }, inactivityTimeout);
     }
-  }, [clearResetTimer, inactivityTimeout, playAudioWithIndex]);
+  }, [clearResetTimer, inactivityTimeout, playAudioWithIndex, isFrozen]);
+
+    // React to changes in the frozen state
+    useEffect(() => {
+      if (isFrozen) {
+        // When frozen, clear any existing inactivity timer
+        clearResetTimer();
+        console.log("Freeze enabled: inactivity timer paused");
+      } else if (currentIndexRef.current !== 0) {
+        // When unfrozen, restart inactivity timer if not at default audio
+        startResetTimer();
+        console.log("Freeze disabled: inactivity timer resumed");
+      }
+    }, [isFrozen, clearResetTimer, startResetTimer]);
+  
 
   // Function to play audio with specified index
   const handleMouseEnter = useCallback(() => {
@@ -253,9 +275,13 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
     // Play the new audio (this will stop any currently playing audio)
     playAudioWithIndex(newIndex);
     
-    // Restart the inactivity timer
-    startResetTimer();
-  }, [audioBuffers.length, currentAudioIndex, playAudioWithIndex, startResetTimer]);
+    // Restart the inactivity timer (if not frozen)
+    if (!isFrozen) {
+      startResetTimer();
+    } else {
+      console.log("Freeze active: not starting inactivity timer after click");
+    }
+  }, [audioBuffers.length, currentAudioIndex, playAudioWithIndex, startResetTimer, isFrozen]);
 
   return (
     <button

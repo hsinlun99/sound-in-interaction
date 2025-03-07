@@ -2,6 +2,7 @@ import Image from "next/image";
 import React, { useState, useEffect, useCallback } from "react";
 import AnimalButton from "@/components/AnimalButton";
 import StartButton from "@/components/StartButton";
+import FreezeButton from "@/components/FreezeButton";
 
 interface Animal {
   id: string;
@@ -18,7 +19,8 @@ export default function Home() {
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [isAudioReady, setIsAudioReady] = useState<boolean>(false);
-  const [loadedAnimals, setLoadedAnimals] = useState<{[key: string]: boolean}>({});
+  const [loadedAnimals, setLoadedAnimals] = useState<{ [key: string]: boolean }>({});
+  const [isFrozen, setIsFrozen] = useState<boolean>(false);
 
   useEffect(() => {
     // Fetch animal data
@@ -33,7 +35,7 @@ export default function Home() {
       try {
         const context = new AudioContext();
         setAudioContext(context);
-        
+
         // Ensure audio context is fully resumed before continuing
         await context.resume();
         console.log("AudioContext is resumed and ready");
@@ -59,8 +61,21 @@ export default function Home() {
     });
   }, []);
 
+  // Handle freeze state changes
+  const handleFreezeChange = useCallback((frozen: boolean) => {
+    setIsFrozen(frozen);
+    console.log(`Freeze state changed to: ${frozen ? 'frozen' : 'unfrozen'}`);
+  }, []);
+
   return (
     <div className="h-screen flex items-center justify-center overflow-hidden">
+
+      {isAudioReady && (
+        <div className="absolute bottom-5 right-6 z-10">
+          <FreezeButton onFreezeChange={handleFreezeChange} />
+        </div>
+      )}
+
       <div className="relative h-screen p-5">
         <Image
           className="w-auto h-full object-contain"
@@ -91,18 +106,19 @@ export default function Home() {
                     onLoaded={handleAudioLoaded}
                   />
                 )}
-                
+
                 {/* Only show the AnimalButton if this animal's audio is loaded */}
                 {loadedAnimals[animal.id] && (
-                  <div 
-                    className="absolute" 
+                  <div
+                    className="absolute"
                     style={{ top: animal.position.top, left: animal.position.left }}
                   >
-                    <AnimalButton 
-                      imagePath={animal.image} 
-                      audioPaths={animal.audioFiles} 
-                      audioContext={audioContext} 
+                    <AnimalButton
+                      imagePath={animal.image}
+                      audioPaths={animal.audioFiles}
+                      audioContext={audioContext}
                       audioColors={animal.borderColors}
+                      isFrozen={isFrozen}
                     />
                   </div>
                 )}
@@ -126,10 +142,10 @@ interface AudioLoaderProps {
 const AudioLoader: React.FC<AudioLoaderProps> = ({ animalId, audioPaths, audioContext, onLoaded }) => {
   // Use a ref to track if we've already called onLoaded
   const hasCalledOnLoaded = React.useRef(false);
-  
+
   useEffect(() => {
     if (hasCalledOnLoaded.current) return;
-    
+
     const loadAudios = async () => {
       try {
         // Load all audio files for this animal
@@ -140,7 +156,7 @@ const AudioLoader: React.FC<AudioLoaderProps> = ({ animalId, audioPaths, audioCo
             return await audioContext.decodeAudioData(arrayBuffer);
           })
         );
-        
+
         // Only call onLoaded once
         if (!hasCalledOnLoaded.current) {
           hasCalledOnLoaded.current = true;
