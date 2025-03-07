@@ -19,6 +19,7 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
   isFrozen = false // Default to false
 }) => {
   const [audioBuffers, setAudioBuffers] = useState<AudioBuffer[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // New loading state
   const [currentAudioIndex, setCurrentAudioIndex] = useState<number>(0);
   const [scale, setScale] = useState<number>(1);
   const [borderWidth, setBorderWidth] = useState<number>(0);
@@ -65,6 +66,7 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
   useEffect(() => {
     // Load all audio files
     const loadAudios = async () => {
+      setIsLoading(true); // Set loading to true at the start
       try {
         const buffers = await Promise.all(
           audioPaths.map(async (path) => {
@@ -75,8 +77,10 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
         );
         setAudioBuffers(buffers);
         console.log(`Loaded ${buffers.length} audio files for ${imagePath}`);
+        setIsLoading(false); // Set loading to false once complete
       } catch (err) {
         console.error("Error loading audio files:", err);
+        setIsLoading(false); // Also set loading to false on error
       }
     };
 
@@ -283,6 +287,43 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
     }
   }, [audioBuffers.length, currentAudioIndex, playAudioWithIndex, startResetTimer, isFrozen]);
 
+  // Loading indicator component
+  const LoadingIndicator = () => (
+    <div
+      style={{
+        width: "110px",
+        height: "110px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: "50%",
+      }}
+    >
+      <div 
+        style={{
+          width: "40px",
+          height: "40px",
+          border: "4px solid rgba(0, 0, 0, 0.1)",
+          borderLeftColor: audioColors[0],
+          borderRadius: "50%",
+          animation: "spin 1s linear infinite",
+        }}
+      />
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+
+  // Return loading indicator if files are still loading
+  if (isLoading) {
+    return <LoadingIndicator />;
+  }
+
+  // Only render the button once loading is complete
   return (
     <button
       onClick={handleClick}
