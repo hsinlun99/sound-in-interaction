@@ -13,6 +13,8 @@ interface Animal {
   image: string;
   audioFiles: string[];
   borderColors: string[];
+  audioYears: string[];
+  facts: string[];
 }
 
 export default function Home() {
@@ -119,6 +121,8 @@ export default function Home() {
                       audioContext={audioContext}
                       audioColors={animal.borderColors}
                       isFrozen={isFrozen}
+                      audioYears={animal.audioYears}
+                      facts={animal.facts}
                     />
                   </div>
                 )}

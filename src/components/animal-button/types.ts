@@ -5,4 +5,6 @@ export interface AnimalButtonProps {
   audioColors: string[];
   inactivityTimeout?: number;
   isFrozen?: boolean;
+  audioYears: string[];
+  facts: string[];
 }
