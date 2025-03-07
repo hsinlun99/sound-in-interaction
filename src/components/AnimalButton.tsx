@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
 
 interface AnimalButtonProps {
@@ -20,6 +20,7 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
   const [currentAudioIndex, setCurrentAudioIndex] = useState<number>(0);
   const [scale, setScale] = useState<number>(1);
   const [borderWidth, setBorderWidth] = useState<number>(0);
+  const [buttonSize, setButtonSize] = useState<number>(110); // Base button size
   const [currentBorderColor, setCurrentBorderColor] = useState<string>(audioColors[0]);
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
   const gainNodeRef = useRef<GainNode | null>(null);
@@ -28,6 +29,36 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
   const isHoveringRef = useRef<boolean>(false);
   const timerIdRef = useRef<number | null>(null);
   const currentIndexRef = useRef<number>(0);
+
+  // Define stopAudio with useCallback to avoid dependency issues
+  const stopAudio = useCallback(() => {
+    if (sourceRef.current) {
+      sourceRef.current.stop();
+      sourceRef.current = null;
+      gainNodeRef.current = null;
+      analyserRef.current = null;
+    }
+    
+    // Cancel any ongoing animation frame
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    
+    // Reset visual effects when audio stops
+    setScale(1);
+    setBorderWidth(0);
+    setButtonSize(110); // Reset button size to default
+    setCurrentBorderColor(audioColors[currentIndexRef.current]);
+  }, [audioColors]);
+
+  // Define clearResetTimer with useCallback
+  const clearResetTimer = useCallback(() => {
+    if (timerIdRef.current !== null) {
+      window.clearTimeout(timerIdRef.current);
+      timerIdRef.current = null;
+    }
+  }, []);
 
   useEffect(() => {
     // Load all audio files
@@ -56,7 +87,7 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [audioPaths, audioContext, imagePath]);
+  }, [audioPaths, audioContext, imagePath, stopAudio, clearResetTimer]);
 
   // When currentAudioIndex changes, update the ref and border color
   useEffect(() => {
@@ -64,32 +95,12 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
     setCurrentBorderColor(audioColors[currentAudioIndex]);
   }, [currentAudioIndex, audioColors]);
 
-  // Function to adjust color brightness based on volume
-  const adjustColorBrightness = (color: string, factor: number) => {
-    // Convert hex to RGB
-    let hex = color.replace('#', '');
-    if (hex.length === 3) {
-      hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-    }
-    
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    
-    // Adjust brightness (limited to valid RGB values)
-    const adjustedR = Math.min(255, Math.max(0, Math.floor(r * factor)));
-    const adjustedG = Math.min(255, Math.max(0, Math.floor(g * factor)));
-    const adjustedB = Math.min(255, Math.max(0, Math.floor(b * factor)));
-    
-    // Convert back to hex
-    return `#${adjustedR.toString(16).padStart(2, '0')}${adjustedG.toString(16).padStart(2, '0')}${adjustedB.toString(16).padStart(2, '0')}`;
-  };
-
   // Function to analyze audio volume and update visual effects
-  const analyzeAudio = () => {
+  const analyzeAudio = useCallback(() => {
     if (!analyserRef.current || !isHoveringRef.current) {
       setScale(1);
       setBorderWidth(0);
+      setButtonSize(110); // Reset button size
       return;
     }
 
@@ -109,74 +120,16 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
     const newBorderWidth = Math.floor(normalizedValue * 8);
     setBorderWidth(newBorderWidth);
     
-    // Make the color more vibrant based on volume
-    // Higher volume = brighter/more saturated color
-    const baseColor = audioColors[currentIndexRef.current];
-    const brightnessMultiplier = 1 + (normalizedValue * 0.5); // from 1.0 to 1.5
-    
-    if (baseColor.startsWith('#')) {
-      setCurrentBorderColor(adjustColorBrightness(baseColor, brightnessMultiplier));
-    }
+    // Adjust button size based on volume (110px to 130px)
+    // Adding up to 20px to the base size depending on volume
+    const newButtonSize = 110 + Math.floor(normalizedValue * 20);
+    setButtonSize(newButtonSize);
     
     // Continue animation loop
     animationFrameRef.current = requestAnimationFrame(analyzeAudio);
-  };
+  }, []);
 
-  // Function to stop currently playing audio
-  const stopAudio = () => {
-    if (sourceRef.current) {
-      sourceRef.current.stop();
-      sourceRef.current = null;
-      gainNodeRef.current = null;
-      analyserRef.current = null;
-    }
-    
-    // Cancel any ongoing animation frame
-    if (animationFrameRef.current !== null) {
-      cancelAnimationFrame(animationFrameRef.current);
-      animationFrameRef.current = null;
-    }
-    
-    // Reset visual effects when audio stops
-    setScale(1);
-    setBorderWidth(0);
-    setCurrentBorderColor(audioColors[currentIndexRef.current]);
-  };
-
-  // Function to clear the inactivity timer
-  const clearResetTimer = () => {
-    if (timerIdRef.current !== null) {
-      window.clearTimeout(timerIdRef.current);
-      timerIdRef.current = null;
-    }
-  };
-
-  // Function to start/restart the inactivity timer
-  const startResetTimer = () => {
-    // Clear any existing timer first
-    clearResetTimer();
-    
-    // Only start a timer if we're not at index 0
-    if (currentIndexRef.current !== 0) {
-      console.log(`Starting reset timer (${inactivityTimeout}ms)`);
-      
-      // Use window.setTimeout and store the numeric ID
-      timerIdRef.current = window.setTimeout(() => {
-        console.log("Inactivity timeout: Resetting to first audio");
-        setCurrentAudioIndex(0);
-        
-        // If currently hovering, play the first audio
-        if (isHoveringRef.current) {
-          playAudioWithIndex(0);
-        }
-        
-        timerIdRef.current = null;
-      }, inactivityTimeout);
-    }
-  };
-
-  // Function to play audio with specified index
-  const playAudioWithIndex = (index: number) => {
+  const playAudioWithIndex = useCallback((index: number) => {
     if (audioBuffers.length === 0) return;
     
     // Always stop current audio before playing new one
@@ -228,6 +181,7 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
           // Reset visual effects
           setScale(1);
           setBorderWidth(0);
+          setButtonSize(110); // Reset button size
           setCurrentBorderColor(audioColors[currentIndexRef.current]);
           
           // If user is still hovering, play the hover audio again
@@ -239,9 +193,35 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
     } catch (err) {
       console.error("Error playing audio:", err);
     }
-  };
+  }, [audioBuffers, audioColors, audioContext, analyzeAudio, stopAudio]);
 
-  const handleMouseEnter = () => {
+  
+  // Function to start/restart the inactivity timer
+  const startResetTimer = useCallback(() => {
+    // Clear any existing timer first
+    clearResetTimer();
+    
+    // Only start a timer if we're not at index 0
+    if (currentIndexRef.current !== 0) {
+      console.log(`Starting reset timer (${inactivityTimeout}ms)`);
+      
+      // Use window.setTimeout and store the numeric ID
+      timerIdRef.current = window.setTimeout(() => {
+        console.log("Inactivity timeout: Resetting to first audio");
+        setCurrentAudioIndex(0);
+        
+        // If currently hovering, play the first audio
+        if (isHoveringRef.current) {
+          playAudioWithIndex(0);
+        }
+        
+        timerIdRef.current = null;
+      }, inactivityTimeout);
+    }
+  }, [clearResetTimer, inactivityTimeout, playAudioWithIndex]);
+
+  // Function to play audio with specified index
+  const handleMouseEnter = useCallback(() => {
     isHoveringRef.current = true;
     playAudioWithIndex(currentIndexRef.current);
     
@@ -249,18 +229,19 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
     if (analyserRef.current && animationFrameRef.current === null) {
       animationFrameRef.current = requestAnimationFrame(analyzeAudio);
     }
-  };
+  }, [playAudioWithIndex, analyzeAudio]);
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
     isHoveringRef.current = false;
     stopAudio();
     // Reset visual effects
     setScale(1);
     setBorderWidth(0);
+    setButtonSize(110); // Reset button size
     setCurrentBorderColor(audioColors[currentIndexRef.current]);
-  };
+  }, [audioColors, stopAudio]);
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     // Calculate new index
     const newIndex = (currentAudioIndex + 1) % audioBuffers.length;
     console.log(`Clicking: changing index from ${currentAudioIndex} to ${newIndex}`);
@@ -274,7 +255,7 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
     
     // Restart the inactivity timer
     startResetTimer();
-  };
+  }, [audioBuffers.length, currentAudioIndex, playAudioWithIndex, startResetTimer]);
 
   return (
     <button
@@ -287,14 +268,14 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
         padding: 0, 
         cursor: "pointer",
         position: "relative",
-        width: "110px",
-        height: "110px",
+        width: `${buttonSize}px`,
+        height: `${buttonSize}px`,
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         borderRadius: "50%",
         backgroundColor: audioColors[currentAudioIndex],
-        transition: "background-color 0.3s ease",
+        transition: "background-color 0.3s ease, width 0.05s ease-out, height 0.05s ease-out",
         boxShadow: isHoveringRef.current ? `0 0 ${borderWidth * 2}px ${currentBorderColor}` : "none"
       }}
     >
@@ -309,7 +290,7 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
       >
         <Image 
           src={imagePath} 
-          alt="Animal" 
+          alt={`Animal button of ${imagePath}`} 
           width={100} 
           height={100} 
           priority
