@@ -1,6 +1,6 @@
 import Image from "next/image";
 import React, { useState, useEffect, useCallback } from "react";
-import AnimalButton from "@/components/AnimalButton";
+import { AnimalButton } from "@/components/animal-button/AnimalButton";
 import StartButton from "@/components/StartButton";
 import FreezeButton from "@/components/FreezeButton";
 
