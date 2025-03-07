@@ -11,6 +11,7 @@ interface Animal {
   };
   image: string;
   audioFiles: string[];
+  borderColors: string[];
 }
 
 export default function Home() {
@@ -101,6 +102,7 @@ export default function Home() {
                       imagePath={animal.image} 
                       audioPaths={animal.audioFiles} 
                       audioContext={audioContext} 
+                      audioColors={animal.borderColors}
                     />
                   </div>
                 )}

@@ -9,6 +9,9 @@
     "audioFiles": [
       "/audio/eagle1.mp3",
       "/audio/eagle2.mp3"
+    ],    
+    "borderColors": [
+      "#760909", "#286D04"
     ]
   },
   {
@@ -21,6 +24,9 @@
     "audioFiles": [
       "/audio/goose1.mp3",
       "/audio/goose2.mp3"
+    ],    
+    "borderColors": [
+      "#760909", "#286D04"
     ]
   },
   {
@@ -33,6 +39,9 @@
     "audioFiles": [
       "/audio/wolverine1.mp3",
       "/audio/wolverine2.mp3"
+    ],    
+    "borderColors": [
+      "#760909", "#286D04"
     ]
   }
 ]

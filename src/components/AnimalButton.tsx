@@ -5,14 +5,16 @@ interface AnimalButtonProps {
   imagePath: string;
   audioPaths: string[];
   audioContext: AudioContext;
-  inactivityTimeout?: number; // Time in milliseconds before resetting to first audio
+  audioColors: string[]; // Color array matching audio array exactly
+  inactivityTimeout?: number;
 }
 
 const AnimalButton: React.FC<AnimalButtonProps> = ({ 
   imagePath, 
   audioPaths, 
   audioContext,
-  inactivityTimeout = 5000 // 5 secondes
+  audioColors,
+  inactivityTimeout = 5000
 }) => {
   const [audioBuffers, setAudioBuffers] = useState<AudioBuffer[]>([]);
   const [currentAudioIndex, setCurrentAudioIndex] = useState<number>(0);
@@ -20,7 +22,7 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
   const gainNodeRef = useRef<GainNode | null>(null);
   const isHoveringRef = useRef<boolean>(false);
   const timerIdRef = useRef<number | null>(null);
-  const currentIndexRef = useRef<number>(0); // Track current index in a ref too
+  const currentIndexRef = useRef<number>(0);
 
   useEffect(() => {
     // Load all audio files
@@ -64,7 +66,6 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
 
   // Function to clear the inactivity timer
   const clearResetTimer = () => {
-    console.log("Clearing reset timer");
     if (timerIdRef.current !== null) {
       window.clearTimeout(timerIdRef.current);
       timerIdRef.current = null;
@@ -162,6 +163,9 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
     startResetTimer();
   };
 
+  // Get the current color directly from the audioColors array
+  const currentColor = audioColors[currentAudioIndex];
+
   return (
     <button
       onClick={handleClick}
@@ -171,10 +175,36 @@ const AnimalButton: React.FC<AnimalButtonProps> = ({
         background: "none", 
         border: "none", 
         padding: 0, 
-        cursor: "pointer"
+        cursor: "pointer",
+        position: "relative",
+        width: "110px",
+        height: "110px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: "50%",
+        backgroundColor: currentColor,
+        transition: "background-color 0.3s ease"
       }}
     >
-      <Image src={imagePath} alt="Animal" width={100} height={100} priority />
+      <div
+        style={{
+          position: "relative",
+          width: "100px",
+          height: "100px"
+        }}
+      >
+        <Image 
+          src={imagePath} 
+          alt="Animal" 
+          width={100} 
+          height={100} 
+          priority
+          style={{
+            objectFit: "contain"
+          }}
+        />
+      </div>
     </button>
   );
 };
