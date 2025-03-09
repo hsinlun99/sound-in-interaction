@@ -1,179 +1,80 @@
 import Image from "next/image";
-import React, { useState, useEffect, useCallback } from "react";
-import { AnimalButton } from "@/components/animal-button/AnimalButton";
-import StartButton from "@/components/StartButton";
-import FreezeButton from "@/components/FreezeButton";
-
-interface Animal {
-  id: string;
-  position: {
-    top: string;
-    left: string;
-  };
-  image: string;
-  audioFiles: string[];
-  borderColors: string[];
-  audioYears: string[];
-  facts: string[];
-}
+import React, { useState } from "react";
 
 export default function Home() {
-  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
-  const [animals, setAnimals] = useState<Animal[]>([]);
-  const [isAudioReady, setIsAudioReady] = useState<boolean>(false);
-  const [loadedAnimals, setLoadedAnimals] = useState<{ [key: string]: boolean }>({});
-  const [isFrozen, setIsFrozen] = useState<boolean>(false);
+  // State to track which animal tab is active
+  const [activeAnimal, setActiveAnimal] = useState("eagle");
 
-  useEffect(() => {
-    // Fetch animal data
-    fetch("/data/animals-data.json")
-      .then(res => res.json())
-      .then(data => setAnimals(data))
-      .catch(err => console.error("Error loading animal data:", err));
-  }, []);
-
-  const handleStart = async () => {
-    if (!audioContext) {
-      try {
-        const context = new AudioContext();
-        setAudioContext(context);
-
-        // Ensure audio context is fully resumed before continuing
-        await context.resume();
-        console.log("AudioContext is resumed and ready");
-        setIsAudioReady(true);
-      } catch (err) {
-        console.error("Error initializing audio context:", err);
-      }
-    }
+  // Handler for button clicks
+  const handleAnimalClick = (animal: React.SetStateAction<string>) => {
+    setActiveAnimal(animal);
   };
 
-  // Use useCallback to prevent function recreation on each render
-  const handleAudioLoaded = useCallback((animalId: string) => {
-    setLoadedAnimals(prev => {
-      // Only update if this animal hasn't been marked as loaded yet
-      if (!prev[animalId]) {
-        console.log(`Animal ${animalId} audio fully loaded`);
-        return {
-          ...prev,
-          [animalId]: true
-        };
-      }
-      return prev;
-    });
-  }, []);
-
-  // Handle freeze state changes
-  const handleFreezeChange = useCallback((frozen: boolean) => {
-    setIsFrozen(frozen);
-    console.log(`Freeze state changed to: ${frozen ? 'frozen' : 'unfrozen'}`);
-  }, []);
-
   return (
-    <div className="h-screen flex items-center justify-center overflow-hidden">
-
-      {isAudioReady && (
-        <div className="absolute bottom-5 right-6 z-10">
-          <FreezeButton onFreezeChange={handleFreezeChange} />
+    <div className="grid grid-rows-3 min-h-screen">
+      {/* Main area (top 2/3) */}
+      <div className="grid row-span-2 grid-cols-12">
+        {/* Left sidebar with tabs (1/12 width) */}
+        <div className="col-span-1 flex flex-col items-center">
+          <button 
+            className={`p-2 ${activeAnimal === "eagle" ? "bg-gray-200" : ""}`}
+            onClick={() => handleAnimalClick("eagle")}
+          >
+            <Image src="/image/animal-eagle.svg" alt="eagle's icon" width={100} height={100} />
+          </button>
+          <button 
+            className={`p-2 ${activeAnimal === "goose" ? "bg-gray-200" : ""}`}
+            onClick={() => handleAnimalClick("goose")}
+          >
+            <Image src="/image/animal-goose.svg" alt="goose's icon" width={100} height={100} />
+          </button>
+          <button 
+            className={`p-2 ${activeAnimal === "wolverine" ? "bg-gray-200" : ""}`}
+            onClick={() => handleAnimalClick("wolverine")}
+          >
+            <Image src="/image/animal-wolverine.svg" alt="wolverine's icon" width={100} height={100} />
+          </button>
         </div>
-      )}
 
-      <div className="relative h-screen p-5">
-        <Image
-          className="w-auto h-full object-contain"
-          src={"/image/map.svg"}
-          alt="sweden map"
-          width={0}
-          height={0}
-          sizes="100vh"
-          priority
-        />
+        <div className="col-span-11 flex items-center justify-center">
+          <Image
+            className="w-auto h-auto max-w-full max-h-full"
+            src="/image/player-play.svg"
+            alt="player"
+            width={0}
+            height={0}
+            sizes="100vw"
+            priority
+          />
+        </div>
+      </div>
 
-        {!isAudioReady && (
-          <div className="absolute top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2">
-            <StartButton onClick={handleStart} />
+      <div className="row-span-1 p-6">
+        {/* Content for animals - only show the active one */}
+        {activeAnimal === "eagle" && (
+          <div>
+            <h2 className="text-2xl font-bold">Eagle</h2>
+            <p>Eagles are large birds of prey known for their keen eyesight and powerful flight.</p>
+            {/* Additional eagle content */}
           </div>
         )}
-
-        {isAudioReady && audioContext && animals.length > 0 && (
-          <>
-            {animals.map((animal) => (
-              <React.Fragment key={animal.id}>
-                {/* Only render the AudioLoader if this animal's audio isn't loaded yet */}
-                {!loadedAnimals[animal.id] && (
-                  <AudioLoader
-                    animalId={animal.id}
-                    audioPaths={animal.audioFiles}
-                    audioContext={audioContext}
-                    onLoaded={handleAudioLoaded}
-                  />
-                )}
-
-                {/* Only show the AnimalButton if this animal's audio is loaded */}
-                {loadedAnimals[animal.id] && (
-                  <div
-                    className="absolute"
-                    style={{ top: animal.position.top, left: animal.position.left }}
-                  >
-                    <AnimalButton
-                      imagePath={animal.image}
-                      audioPaths={animal.audioFiles}
-                      audioContext={audioContext}
-                      audioColors={animal.borderColors}
-                      isFrozen={isFrozen}
-                      audioYears={animal.audioYears}
-                      facts={animal.facts}
-                    />
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
-          </>
+        
+        {activeAnimal === "goose" && (
+          <div>
+            <h2 className="text-2xl font-bold">Goose</h2>
+            <p>Geese are waterfowl belonging to the family Anatidae. They are known for their migration patterns and distinctive honking.</p>
+            {/* Additional goose content */}
+          </div>
+        )}
+        
+        {activeAnimal === "wolverine" && (
+          <div>
+            <h2 className="text-2xl font-bold">Wolverine</h2>
+            <p>Wolverines are powerful and ferocious mammals that resemble small bears but are actually the largest member of the weasel family.</p>
+            {/* Additional wolverine content */}
+          </div>
         )}
       </div>
     </div>
   );
 }
-
-// Component to preload audio and signal when it's done
-interface AudioLoaderProps {
-  animalId: string;
-  audioPaths: string[];
-  audioContext: AudioContext;
-  onLoaded: (animalId: string) => void;
-}
-
-const AudioLoader: React.FC<AudioLoaderProps> = ({ animalId, audioPaths, audioContext, onLoaded }) => {
-  // Use a ref to track if we've already called onLoaded
-  const hasCalledOnLoaded = React.useRef(false);
-
-  useEffect(() => {
-    if (hasCalledOnLoaded.current) return;
-
-    const loadAudios = async () => {
-      try {
-        // Load all audio files for this animal
-        await Promise.all(
-          audioPaths.map(async (path) => {
-            const res = await fetch(path);
-            const arrayBuffer = await res.arrayBuffer();
-            return await audioContext.decodeAudioData(arrayBuffer);
-          })
-        );
-
-        // Only call onLoaded once
-        if (!hasCalledOnLoaded.current) {
-          hasCalledOnLoaded.current = true;
-          onLoaded(animalId);
-        }
-      } catch (err) {
-        console.error(`Error loading audio for ${animalId}:`, err);
-      }
-    };
-
-    loadAudios();
-  }, [animalId, audioPaths, audioContext, onLoaded]);
-
-  // This component doesn't render anything
-  return null;
-};
