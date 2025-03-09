@@ -1,5 +1,7 @@
+import TimeLine from "@/components/TimeLine";
 import Image from "next/image";
 import React, { useState } from "react";
+import AnimalData from "../../public/data/animals-data.json"
 
 export default function Home() {
   // State to track which animal tab is active
@@ -9,6 +11,10 @@ export default function Home() {
   const handleAnimalClick = (animal: React.SetStateAction<string>) => {
     setActiveAnimal(animal);
   };
+
+  const eagle = AnimalData[0];
+  const goose = AnimalData[1];
+  const wolverine = AnimalData[2];
 
   return (
     <div className="grid grid-rows-3 min-h-screen">
@@ -49,28 +55,23 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="row-span-1 p-6">
+      <div className="grid row-span-1 grid-rows-12">
         {/* Content for animals - only show the active one */}
         {activeAnimal === "eagle" && (
-          <div>
-            <h2 className="text-2xl font-bold">Eagle</h2>
-            <p>Eagles are large birds of prey known for their keen eyesight and powerful flight.</p>
-            {/* Additional eagle content */}
+          <div className="row-span-full">
+            <TimeLine years={eagle.years} />
           </div>
         )}
         
         {activeAnimal === "goose" && (
-          <div>
-            <h2 className="text-2xl font-bold">Goose</h2>
-            <p>Geese are waterfowl belonging to the family Anatidae. They are known for their migration patterns and distinctive honking.</p>
-            {/* Additional goose content */}
+          <div className="row-span-full">
+            <TimeLine years={goose.years} />
           </div>
         )}
         
         {activeAnimal === "wolverine" && (
-          <div>
-            <h2 className="text-2xl font-bold">Wolverine</h2>
-            <p>Wolverines are powerful and ferocious mammals that resemble small bears but are actually the largest member of the weasel family.</p>
+          <div className="row-span-full">
+            <TimeLine years={wolverine.years} />
             {/* Additional wolverine content */}
           </div>
         )}

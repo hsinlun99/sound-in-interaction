@@ -1,98 +1,29 @@
 [
   {
     "id": "eagle",
-    "position": {
-      "top": "20%",
-      "left": "40%"
-    },
-    "image": "/image/animal-eagle.svg",
-    "audioFiles": [
-      "/audio/level-1.wav",
-      "/audio/level-2.wav",
-      "/audio/level-3.wav",
-      "/audio/level-4.wav",
-      "/audio/level-5.wav"
-    ],    
-    "borderColors": [
-      "#760909", "#AF3838", "#A97026", "#707205",  "#286D04"
+    "years": [
+      "2002", "2003", "2006", "2010", "2014", "2018", "2022"
     ],
-    "audioYears": [
-      "future", 
-      "worst past",
-      "2 worst past",
-      "2 best past",
-      "best past"
-    ],
-    "facts": [
-      "fact 1",
-      "fact 2",
-      "fact 3",
-      "fact 4",
-      "fact 5"
+    "population": [
+      384, 361, 373, 498, 479, 466, 544.5
     ]
   },
   {
     "id": "goose",
-    "position": {
-      "top": "50%",
-      "left": "45%"
-    },
-    "image": "/image/animal-goose.svg",
-    "audioFiles": [
-      "/audio/level-1.wav",
-      "/audio/level-2.wav",
-      "/audio/level-3.wav",
-      "/audio/level-4.wav",
-      "/audio/level-5.wav"
-    ],    
-    "borderColors": [
-      "#760909", "#AF3838", "#A97026", "#707205",  "#286D04"
+    "years": [
+      "2000", "2004", "2008", "2012", "2016", "2020", "2021"
     ],
-    "audioYears": [
-      "future", 
-      "worst past",
-      "2 worst past",
-      "2 best past",
-      "best past"
-    ],
-    "facts": [
-      "fact 1",
-      "fact 2",
-      "fact 3",
-      "fact 4",
-      "fact 5"
+    "population": [
+      200572, 257355, 429546, 484154, 566242, 317734, 738152
     ]
   },
   {
     "id": "wolverine",
-    "position": {
-      "top": "60%",
-      "left": "10%"
-    },
-    "image": "/image/animal-wolverine.svg",
-    "audioFiles": [
-      "/audio/level-1.wav",
-      "/audio/level-2.wav",
-      "/audio/level-3.wav",
-      "/audio/level-4.wav",
-      "/audio/level-5.wav"
-    ],    
-    "borderColors": [
-      "#760909", "#AF3838", "#A97026", "#707205",  "#286D04"
+    "years": [
+      "2013", "2015", "2017", "2019", "2021", "2023"
     ],
-    "audioYears": [
-      "future", 
-      "worst past",
-      "2 worst past",
-      "2 best past",
-      "best past"
-    ],
-    "facts": [
-      "fact 1",
-      "fact 2",
-      "fact 3",
-      "fact 4",
-      "fact 5"
+    "population": [
+      547, 525, 557, 668, 723, 776
     ]
   }
 ]
