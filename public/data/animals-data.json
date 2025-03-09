@@ -6,6 +6,15 @@
     ],
     "population": [
       384, 361, 373, 498, 479, 466, 544.5
+    ],
+    "yearAudios": [
+      "/audio/level-1.wav",
+      "/audio/level-1.wav",
+      "/audio/level-1.wav",
+      "/audio/level-4.wav",
+      "/audio/level-4.wav",
+      "/audio/level-3.wav",
+      "/audio/level-5.wav"
     ]
   },
   {
@@ -15,6 +24,15 @@
     ],
     "population": [
       200572, 257355, 429546, 484154, 566242, 317734, 738152
+    ],
+    "yearAudios": [
+      "/audio/level-1.wav",
+      "/audio/level-1.wav",
+      "/audio/level-3.wav",
+      "/audio/level-3.wav",
+      "/audio/level-4.wav",
+      "/audio/level-2.wav",
+      "/audio/level-5.wav"
     ]
   },
   {
@@ -24,6 +42,14 @@
     ],
     "population": [
       547, 525, 557, 668, 723, 776
+    ],
+    "yearAudios": [
+      "/audio/level-1.wav",
+      "/audio/level-1.wav",
+      "/audio/level-1.wav",
+      "/audio/level-3.wav",
+      "/audio/level-4.wav",
+      "/audio/level-5.wav"
     ]
   }
 ]
