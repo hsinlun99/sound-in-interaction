@@ -10,7 +10,6 @@ interface TimeLineProps {
 const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels }) => {
   const [selectedYear, setSelectedYear] = useState(years[0]);
   const [position, setPosition] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [, setCurrentYearIndex] = useState(0);
   
@@ -164,34 +163,6 @@ const startPlayback = () => {
     handleSliderChange(e.nativeEvent);
   };
   
-  // Set dragging state on mouse down
-  const handleMouseDown = useCallback(() => {
-    setIsDragging(true);
-  }, []);
-  
-  // Handle drag-related event listeners
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging) {
-        handleSliderChange(e);
-      }
-    };
-    
-    const handleMouseUp = () => {
-      setIsDragging(false);
-    };
-    
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    }
-    
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, handleSliderChange]);
-  
   return (
     <div className="grid grid-rows-3 min-h-screen w-full max-w-lg mx-auto">
       {/* Button section - top 2/3 */}
@@ -232,7 +203,6 @@ const startPlayback = () => {
           <div 
             className="absolute w-6 h-6 bg-blue-500 rounded-full -ml-3 top-2 cursor-pointer shadow-md hover:bg-blue-600 transition-colors"
             style={{ left: `${position}%` }}
-            onMouseDown={handleMouseDown}
           ></div>
         </div>
       </div>
