@@ -180,10 +180,10 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
   }, [handleSliderChange]);
 
   return (
-    <div className="grid grid-rows-5 min-h-screen min-w-screen w-full max-w-lg mx-auto">
-      {/* Button section - top 2/3 */}
+    <div className="grid grid-rows-5 h-screen w-full max-w-full mx-auto overflow-hidden">
+      {/* Button section - top 3/5 */}
       <div className="row-span-3 flex items-center justify-center">
-        <div className="grid grid-cols-12 w-full">
+        <div className="grid grid-cols-12 w-full max-w-xl mx-auto">
           <button
             onClick={togglePlayback}
             className="col-start-4 col-span-6 flex items-center justify-center rounded-full focus:outline-none"
@@ -193,33 +193,42 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
         </div>
       </div>
 
-      {/* Timeline section - bottom 1/3 - now takes 7/12 of the width and is centered */}
-      <div className="row-span-2 flex flex-col justify-center">
-        <div className="mx-auto w-full grid grid-cols-12 h-full">
-          {/* Y-axis labels column - Updated to properly align with grid lines */}
+      {/* Timeline section - bottom 2/5 */}
+      <div className="row-span-2 flex flex-col justify-start px-4">
+        {/* Increased max-width from max-w-lg to max-w-xl for wider timeline */}
+        <div className="w-full max-w-6xl mx-auto grid grid-cols-12 h-2/3">
+          {/* Y-axis labels column - kept at col-span-1 to maintain relative position */}
           <div className="col-span-1 flex flex-col justify-between h-full">
             {yLabels.slice().reverse().map((label, index) => (
               <div key={index} className="flex items-center h-1">
-                <span className="mx-auto text-lg">{label}</span>
+                <span className="text-sm">{label}</span>
               </div>
             ))}
           </div>
 
+          {/* Main grid area - expanded to col-span-11 to maintain relative proportions */}
           <div className="col-span-11">
-            {/* Grid lines - Updated for proper alignment */}
-            <div className="flex flex-col justify-between h-full w-9/12">
+            {/* Grid lines */}
+            <div className="flex flex-col justify-between h-full w-full">
               {yLabels.map((_, index) => (
                 <div key={index} className="h-1 w-full bg-gray-200 rounded-full"></div>
               ))}
             </div>
+          </div>
+        </div>
 
+        {/* Separate the slider from the grid lines */}
+        {/* Also increased max-width from max-w-lg to max-w-xl here for consistency */}
+        <div className="w-full max-w-6xl mx-auto grid grid-cols-12 mt-12">
+          <div className="col-span-1"></div>
+          <div className="col-span-11">
             <div
-              className="relative h- mt-14 w-9/12"
+              className="relative h-20 w-full"
               ref={sliderRef}
               onClick={handleClick}
             >
               {/* Track */}
-              <div className="absolute h-2 w-full bg-gray-300 rounded-full top-4"></div>
+              <div className="absolute h-2 w-full bg-gray-300 rounded-full"></div>
 
               {/* Tick marks and labels */}
               {years.map((year) => {
@@ -230,7 +239,7 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
                   <div
                     key={year}
                     className="absolute"
-                    style={{ left: `calc(${position}% - 8px)`, top: 12 }}
+                    style={{ left: `calc(${position}% - 8px)`, top: -4 }}
                   >
                     <div className={`w-4 h-4 bg-gray-500 rounded-full`}></div>
                     <div className="relative -left-3 mt-6 text-sm">{year}</div>
@@ -240,7 +249,7 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
 
               {/* Thumb - calculate position dynamically */}
               <div
-                className="absolute w-6 h-6 bg-blue-500 rounded-full -ml-3 top-2 cursor-pointer shadow-md hover:bg-blue-600 transition-colors"
+                className="absolute w-6 h-6 bg-blue-500 rounded-full -ml-3 -mt-2 cursor-pointer shadow-md hover:bg-blue-600 transition-colors"
                 style={{ left: `${calculatePosition(selectedYear)}%` }}
               ></div>
             </div>
