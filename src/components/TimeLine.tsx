@@ -179,8 +179,19 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
     handleSliderChange(e.nativeEvent);
   }, [handleSliderChange]);
 
-  // Calculate max population for scaling
+  // Calculate max and min population for scaling
   const maxPopulation = Math.max(...population);
+  const minPopulation = Math.min(...population);
+  
+  // Function to calculate vertical position based on population value
+  const calculateVerticalPosition = (popValue: number) => {
+    // If all values are the same, position in the middle
+    if (maxPopulation === minPopulation) return 50;
+    
+    // Calculate percentage from bottom (0%) to top (100%)
+    // Normalize the population value between min and max
+    return ((popValue - minPopulation) / (maxPopulation - minPopulation)) * 100;
+  };
 
   return (
     <div className="grid grid-rows-5 h-screen w-full max-w-full mx-auto overflow-hidden">
@@ -198,9 +209,9 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
 
       {/* Timeline section - bottom 2/5 */}
       <div className="row-span-2 flex flex-col justify-start px-4">
-        {/* Increased max-width from max-w-lg to max-w-xl for wider timeline */}
+        {/* Increased max-width for wider timeline */}
         <div className="w-full max-w-6xl mx-auto grid grid-cols-12 h-2/3">
-          {/* Y-axis labels column - kept at col-span-1 to maintain relative position */}
+          {/* Y-axis labels column */}
           <div className="col-span-1 flex flex-col justify-between h-full">
             {yLabels.slice().reverse().map((label, index) => (
               <div key={index} className="flex items-center h-1">
@@ -209,7 +220,7 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
             ))}
           </div>
 
-          {/* Main grid area - expanded to col-span-11 to maintain relative proportions */}
+          {/* Main grid area */}
           <div className="col-span-11 relative">
             {/* Grid lines */}
             <div className="flex flex-col justify-between h-full w-full">
@@ -218,13 +229,13 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
               ))}
             </div>
             
-            {/* Population points on the bottom grid line */}
+            {/* Population points with vertical positioning based on value */}
             {years.map((year, idx) => {
               // Calculate horizontal position based on the year
               const xPosition = calculatePosition(year);
               
-              // Calculate the size of the population point (scaled relative to max population)
-              const pointSize = Math.max(4, (population[idx] / maxPopulation) * 20);
+              // Calculate vertical position (0% = bottom, 100% = top)
+              const verticalPercentage = calculateVerticalPosition(population[idx]);
               
               return (
                 <div
@@ -232,16 +243,12 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
                   className="absolute"
                   style={{ 
                     left: `${xPosition}%`,
-                    bottom: 0, // Position at the bottom grid line
+                    bottom: `${verticalPercentage}%`, // Position vertically based on value
                     transform: 'translate(-50%, 50%)' // Center the point
                   }}
                 >
                   <div 
-                    className="bg-green-500 rounded-full"
-                    style={{ 
-                      width: `${pointSize}px`, 
-                      height: `${pointSize}px` 
-                    }}
+                    className="w-4 h-4 bg-green-500 rounded-full"
                   ></div>
                 </div>
               );
@@ -250,7 +257,6 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
         </div>
 
         {/* Separate the slider from the grid lines */}
-        {/* Also increased max-width from max-w-lg to max-w-xl here for consistency */}
         <div className="w-full max-w-6xl mx-auto grid grid-cols-12 mt-12">
           <div className="col-span-1"></div>
           <div className="col-span-11">
