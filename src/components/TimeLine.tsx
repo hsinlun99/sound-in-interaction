@@ -222,16 +222,8 @@ const startPlayback = () => {
           
           {/* Tick marks and labels */}
           {years.map((year, index) => (
-            console.log(healthLevels[index]),
             <div key={year} className="absolute" style={{ left: `${tickPositions[index]}%`, top: 0 }}>
-              <div className={`w-1 h-4 ${
-              healthLevels[index] === 'level-1' ? 'bg-level-1' :
-              healthLevels[index] === 'level-2' ? 'bg-level-2' :
-              healthLevels[index] === 'level-3' ? 'bg-level-3' :
-              healthLevels[index] === 'level-4' ? 'bg-level-4' :
-              healthLevels[index] === 'level-5' ? 'bg-level-5' :
-              'bg-gray-400'
-            }`}></div>
+              <div className={`w-4 h-4 bg-gray-500`}></div>
               <div className="relative -left-3 mt-6 text-sm">{year}</div>
             </div>
           ))}
