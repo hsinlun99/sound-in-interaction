@@ -25,19 +25,19 @@ export default function Home() {
           className={`row-span-1 p-2 ${activeAnimal === "eagle" ? "bg-gray-200" : ""}`}
           onClick={() => handleAnimalClick("eagle")}
         >
-          <Image src="/image/animal-eagle.svg" alt="eagle's icon" width={100} height={100} />
+          <Image src="/image/animal-eagle.svg" alt="eagle's icon" width={100} height={100} priority />
         </button>
         <button
           className={`row-span-1 p-2 ${activeAnimal === "goose" ? "bg-gray-200" : ""}`}
           onClick={() => handleAnimalClick("goose")}
         >
-          <Image src="/image/animal-goose.svg" alt="goose's icon" width={100} height={100} />
+          <Image src="/image/animal-goose.svg" alt="goose's icon" width={100} height={100} priority />
         </button>
         <button
           className={`row-span-1 p-2 ${activeAnimal === "wolverine" ? "bg-gray-200" : ""}`}
           onClick={() => handleAnimalClick("wolverine")}
         >
-          <Image src="/image/animal-wolverine.svg" alt="wolverine's icon" width={100} height={100} />
+          <Image src="/image/animal-wolverine.svg" alt="wolverine's icon" width={100} height={100} priority />
         </button>
       </div>
 

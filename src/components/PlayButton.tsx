@@ -1,5 +1,6 @@
 interface PlayButtonProps {
   isPlaying: boolean;
+  selectedYear: string;
 }
 
 const PlayButton: React.FC<PlayButtonProps> = ({ isPlaying }) => {
@@ -11,8 +12,8 @@ const PlayButton: React.FC<PlayButtonProps> = ({ isPlaying }) => {
         </g>
         <path d="M118 99.6C118 93.6591 118 90.6918 119.846 88.8459C121.692 87 124.659 87 130.6 87C136.541 87 139.508 87 141.354 88.8459C143.2 90.6918 143.2 93.6591 143.2 99.6V137.4C143.2 143.341 143.2 146.308 141.354 148.154C139.508 150 136.541 150 130.6 150C124.659 150 121.692 150 119.846 148.154C118 146.308 118 143.341 118 137.4V99.6ZM155.8 99.6C155.8 93.6591 155.8 90.6918 157.646 88.8459C159.492 87 162.459 87 168.4 87C174.341 87 177.308 87 179.154 88.8459C181 90.6918 181 93.6591 181 99.6V137.4C181 143.341 181 146.308 179.154 148.154C177.308 150 174.341 150 168.4 150C162.459 150 159.492 150 157.646 148.154C155.8 146.308 155.8 143.341 155.8 137.4V99.6Z" fill="black" />
         <defs>
-          <filter id="filter0_d_50_212" x="0" y="0" width="298" height="245" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-            <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <filter id="filter0_d_50_212" x="0" y="0" width="298" height="245" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+            <feFlood floodOpacity="0" result="BackgroundImageFix" />
             <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" />
             <feOffset dy="4" />
             <feGaussianBlur stdDeviation="5" />
@@ -34,8 +35,8 @@ const PlayButton: React.FC<PlayButtonProps> = ({ isPlaying }) => {
         </g>
         <path d="M183.81 110.265C185.378 111.108 186.689 112.366 187.603 113.905C188.517 115.444 189 117.205 189 119C189 120.795 188.517 122.556 187.603 124.095C186.689 125.634 185.378 126.892 183.81 127.735L142.001 150.725C135.269 154.431 127 149.613 127 141.994V96.0096C127 88.3868 135.269 83.5723 142.001 87.2715L183.81 110.265Z" fill="black" />
         <defs>
-          <filter id="filter0_d_50_210" x="0" y="0" width="298" height="245" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-            <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <filter id="filter0_d_50_210" x="0" y="0" width="298" height="245" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+            <feFlood floodOpacity="0" result="BackgroundImageFix" />
             <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha" />
             <feOffset dy="4" />
             <feGaussianBlur stdDeviation="5" />
