@@ -4,9 +4,10 @@ import Image from 'next/image';
 interface TimeLineProps {
   years: string[];
   yearAudios: string[];
+  healthLevel: string[];
 }
 
-const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios }) => {
+const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevel }) => {
   const [selectedYear, setSelectedYear] = useState(years[0]);
   const [position, setPosition] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -229,8 +230,16 @@ const startPlayback = () => {
           
           {/* Tick marks and labels */}
           {years.map((year, index) => (
+            console.log(healthLevel[index]),
             <div key={year} className="absolute" style={{ left: `${tickPositions[index]}%`, top: 0 }}>
-              <div className="w-1 h-4 bg-gray-500 relative left-0"></div>
+              <div className={`w-1 h-4 ${
+              healthLevel[index] === 'level-1' ? 'bg-level-1' :
+              healthLevel[index] === 'level-2' ? 'bg-level-2' :
+              healthLevel[index] === 'level-3' ? 'bg-level-3' :
+              healthLevel[index] === 'level-4' ? 'bg-level-4' :
+              healthLevel[index] === 'level-5' ? 'bg-level-5' :
+              'bg-gray-400'
+            }`}></div>
               <div className="relative -left-3 mt-6 text-sm">{year}</div>
             </div>
           ))}

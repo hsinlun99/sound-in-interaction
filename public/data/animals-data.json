@@ -1,12 +1,8 @@
 [
   {
     "id": "eagle",
-    "years": [
-      "2002", "2003", "2006", "2010", "2014", "2018", "2022"
-    ],
-    "population": [
-      384, 361, 373, 498, 479, 466, 544.5
-    ],
+    "years": ["2002", "2003", "2006", "2010", "2014", "2018", "2022"],
+    "population": [384, 361, 373, 498, 479, 466, 544.5],
     "yearAudios": [
       "/audio/level-1.wav",
       "/audio/level-1.wav",
@@ -15,16 +11,21 @@
       "/audio/level-4.wav",
       "/audio/level-3.wav",
       "/audio/level-5.wav"
+    ],
+    "healthLevel": [
+      "level-1",
+      "level-1",
+      "level-1",
+      "level-4",
+      "level-4",
+      "level-3",
+      "level-5"
     ]
   },
   {
     "id": "goose",
-    "years": [
-      "2000", "2004", "2008", "2012", "2016", "2020", "2021"
-    ],
-    "population": [
-      200572, 257355, 429546, 484154, 566242, 317734, 738152
-    ],
+    "years": ["2000", "2004", "2008", "2012", "2016", "2020", "2021"],
+    "population": [200572, 257355, 429546, 484154, 566242, 317734, 738152],
     "yearAudios": [
       "/audio/level-1.wav",
       "/audio/level-1.wav",
@@ -33,16 +34,21 @@
       "/audio/level-4.wav",
       "/audio/level-2.wav",
       "/audio/level-5.wav"
+    ],
+    "healthLevel": [
+      "level-1",
+      "level-1",
+      "level-3",
+      "level-3",
+      "level-4",
+      "level-2",
+      "level-5"
     ]
   },
   {
     "id": "wolverine",
-    "years": [
-      "2013", "2015", "2017", "2019", "2021", "2023"
-    ],
-    "population": [
-      547, 525, 557, 668, 723, 776
-    ],
+    "years": ["2013", "2015", "2017", "2019", "2021", "2023"],
+    "population": [547, 525, 557, 668, 723, 776],
     "yearAudios": [
       "/audio/level-1.wav",
       "/audio/level-1.wav",
@@ -50,6 +56,14 @@
       "/audio/level-3.wav",
       "/audio/level-4.wav",
       "/audio/level-5.wav"
+    ],
+    "healthLevel": [
+      "level-1",
+      "level-1",
+      "level-1",
+      "level-3",
+      "level-4",
+      "level-5"
     ]
   }
 ]

@@ -3,6 +3,12 @@
 @theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+    
+  --color-level-1: #6B0F0F;
+  --color-level-2: #AF3838;
+  --color-level-3: #8D5E06;
+  --color-level-4: #6A7908;
+  --color-level-5: #146A05;
 }
 
 :root {
