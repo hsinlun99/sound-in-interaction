@@ -2,14 +2,13 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import PlayButton from './PlayButton';
 
 interface TimeLineProps {
-  years: string[];
+  years: number[];
   yearAudios: string[];
   healthLevels: string[];
 }
 
 const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels }) => {
   const [selectedYear, setSelectedYear] = useState(years[0]);
-  const [position, setPosition] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [, setCurrentYearIndex] = useState(0);
 
@@ -17,22 +16,28 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels }) 
   const playbackTimerRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Calculate positions for tick marks
-  const tickPositions = years.map((_, index) => {
-    return (index / (years.length - 1)) * 100;
-  });
-
-  // Clean up on unmount
+  // Reset selected year when years array changes
   useEffect(() => {
-    return () => {
-      stopPlayback();
-    };
-  }, []);
+    // If the currently selectedYear isn't in the new years array, reset to the first year
+    if (!years.includes(selectedYear)) {
+      setSelectedYear(years[0]);
+    }
+  }, [years, selectedYear]);
 
   // 監聽 isPlaying 狀態變化
   useEffect(() => {
     console.log("isPlaying state changed:", isPlaying);
   }, [isPlaying]);
+
+  // Calculate the current position based on the selected year
+  const calculatePosition = useCallback((year: number) => {
+    const minYear = Math.min(...years);
+    const maxYear = Math.max(...years);
+    const yearRange = maxYear - minYear;
+    return yearRange > 0
+      ? ((year - minYear) / yearRange) * 100
+      : 50; // Default to middle if all years are the same
+  }, [years]);
 
   // Play audio file for the current year
   const playYearAudio = useCallback((yearIndex: number) => {
@@ -67,8 +72,7 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels }) 
   }, [yearAudios]);
 
   // Start automatic playback of all years
-  // 修改 startPlayback 函數
-  const startPlayback = () => {
+  const startPlayback = useCallback(() => {
     if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
 
     // 開始於當前選定的年份
@@ -79,7 +83,6 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels }) 
       if (index < years.length) {
         const year = years[index];
         setSelectedYear(year);
-        setPosition(tickPositions[index]);
         setCurrentYearIndex(index);
 
         // 播放當前索引的音頻
@@ -97,10 +100,10 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels }) 
     setIsPlaying(true);
     // 立即播放第一個
     playNext();
-  };
+  }, [years, selectedYear, playYearAudio]);
 
   // Stop playback
-  const stopPlayback = () => {
+  const stopPlayback = useCallback(() => {
     if (playbackTimerRef.current) {
       clearTimeout(playbackTimerRef.current);
       playbackTimerRef.current = null;
@@ -113,16 +116,23 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels }) 
     }
 
     setIsPlaying(false);
-  };
+  }, []);
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      stopPlayback();
+    };
+  }, [stopPlayback]);
 
   // Toggle playback state
-  const togglePlayback = () => {
+  const togglePlayback = useCallback(() => {
     if (isPlaying) {
       stopPlayback();
     } else {
       startPlayback();
     }
-  };
+  }, [isPlaying, startPlayback, stopPlayback]);
 
   // Handle slider thumb movement
   const handleSliderChange = useCallback((e: MouseEvent) => {
@@ -131,20 +141,29 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels }) 
     const clickPosition = e.clientX - sliderRef.current.getBoundingClientRect().left;
     const percentPosition = (clickPosition / sliderWidth) * 100;
 
-    // 找到最近的刻度位置
-    let closestIndex = 0;
-    let closestDistance = Math.abs(tickPositions[0] - percentPosition);
+    // Calculate the min and max years
+    const minYear = Math.min(...years);
+    const maxYear = Math.max(...years);
+    const yearRange = maxYear - minYear;
 
-    tickPositions.forEach((pos, index) => {
-      const distance = Math.abs(pos - percentPosition);
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closestIndex = index;
+    // Convert click position to a year value
+    const clickedYear = minYear + (yearRange * (percentPosition / 100));
+
+    // Find the closest year in the years array
+    let closestYear = years[0];
+    let minDistance = Math.abs(closestYear - clickedYear);
+
+    years.forEach((year) => {
+      const distance = Math.abs(year - clickedYear);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestYear = year;
       }
     });
 
-    setPosition(tickPositions[closestIndex]);
-    setSelectedYear(years[closestIndex]);
+    const closestIndex = years.indexOf(closestYear);
+
+    setSelectedYear(closestYear);
     setCurrentYearIndex(closestIndex);
 
     // 停止自動序列播放
@@ -156,12 +175,12 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels }) 
     // 播放選定年份的音頻 - playYearAudio 會設置 isPlaying 為 true
     playYearAudio(closestIndex);
 
-  }, [tickPositions, years, playYearAudio]);
+  }, [years, playYearAudio]);
 
   // React click event handler
-  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     handleSliderChange(e.nativeEvent);
-  };
+  }, [handleSliderChange]);
 
   return (
     <div className="grid grid-rows-3 min-h-screen min-w-screen w-full max-w-lg mx-auto">
@@ -179,7 +198,7 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels }) 
 
       {/* Timeline section - bottom 1/3 - now takes 7/12 of the width and is centered */}
       <div className="row-span-1 flex flex-col justify-center">
-        <div className="mx-auto w-9/12">
+        <div className="mx-auto w-10/12">
           <div className="text-center mb-4">
             <h2 className="text-xl font-bold">Year: {selectedYear}</h2>
           </div>
@@ -193,17 +212,26 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels }) 
             <div className="absolute h-2 w-full bg-gray-300 rounded-full top-4"></div>
 
             {/* Tick marks and labels */}
-            {years.map((year, index) => (
-              <div key={year} className="absolute" style={{ left: `${tickPositions[index]}%`, top: 0 }}>
-                <div className={`w-4 h-4 bg-gray-500`}></div>
-                <div className="relative -left-3 mt-6 text-sm">{year}</div>
-              </div>
-            ))}
+            {years.map((year) => {
+              // Calculate position based on the year value relative to min and max years
+              const position = calculatePosition(year);
 
-            {/* Thumb */}
+              return (
+                <div
+                  key={year}
+                  className="absolute"
+                  style={{ left: `calc(${position}% - 8px)`, top: 12 }}
+                >
+                  <div className={`w-4 h-4 bg-gray-500 rounded-full`}></div>
+                  <div className="relative -left-3 mt-6 text-sm">{year}</div>
+                </div>
+              );
+            })}
+
+            {/* Thumb - calculate position dynamically */}
             <div
               className="absolute w-6 h-6 bg-blue-500 rounded-full -ml-3 top-2 cursor-pointer shadow-md hover:bg-blue-600 transition-colors"
-              style={{ left: `${position}%` }}
+              style={{ left: `${calculatePosition(selectedYear)}%` }}
             ></div>
           </div>
         </div>
