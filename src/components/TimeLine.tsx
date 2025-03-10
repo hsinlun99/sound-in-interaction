@@ -24,11 +24,6 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels }) 
     }
   }, [years, selectedYear]);
 
-  // 監聽 isPlaying 狀態變化
-  useEffect(() => {
-    console.log("isPlaying state changed:", isPlaying);
-  }, [isPlaying]);
-
   // Calculate the current position based on the selected year
   const calculatePosition = useCallback((year: number) => {
     const minYear = Math.min(...years);
