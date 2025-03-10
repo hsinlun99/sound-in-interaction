@@ -10,7 +10,7 @@ interface TimeLineProps {
 const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels }) => {
   const [selectedYear, setSelectedYear] = useState(years[0]);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [, setCurrentYearIndex] = useState(0);
+  const [currentYearIndex, setCurrentYearIndex] = useState(0);
 
   const sliderRef = useRef<HTMLDivElement | null>(null);
   const playbackTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -186,7 +186,7 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels }) 
             onClick={togglePlayback}
             className="col-start-4 col-span-6 flex items-center justify-center rounded-full focus:outline-none"
           >
-            <PlayButton isPlaying={isPlaying} selectedYearIndex={years.indexOf(selectedYear)} healthLevels={healthLevels} />
+            <PlayButton isPlaying={isPlaying} selectedYearIndex={currentYearIndex} healthLevels={healthLevels} />
           </button>
         </div>
       </div>
