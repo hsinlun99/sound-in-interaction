@@ -201,7 +201,7 @@ const startPlayback = () => {
             onClick={togglePlayback}
             className="col-start-4 col-span-6 flex items-center justify-center rounded-full focus:outline-none"
           >
-            <PlayButton isPlaying={isPlaying} selectedYear={selectedYear} healthLevels={healthLevels} />
+            <PlayButton isPlaying={isPlaying} selectedYearIndex={years.indexOf(selectedYear)} healthLevels={healthLevels} />
           </button>
         </div>
       </div>

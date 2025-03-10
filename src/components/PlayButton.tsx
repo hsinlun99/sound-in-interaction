@@ -1,14 +1,20 @@
 interface PlayButtonProps {
   isPlaying: boolean;
-  selectedYear: string;
+  selectedYearIndex: number;
   healthLevels: string[];
 }
 
-const PlayButton: React.FC<PlayButtonProps> = ({ isPlaying, selectedYear, healthLevels }) => {
+const PlayButton: React.FC<PlayButtonProps> = ({ isPlaying, selectedYearIndex, healthLevels }) => {
 
   if (isPlaying) {
     return (
-      <svg className="fill-level-1" width="298" height="245" viewBox="0 0 298 245" xmlns="http://www.w3.org/2000/svg">
+      <svg className={`${healthLevels[selectedYearIndex] === 'level-1' ? 'fill-level-1' :
+          healthLevels[selectedYearIndex] === 'level-2' ? 'fill-level-2' :
+            healthLevels[selectedYearIndex] === 'level-3' ? 'fill-level-3' :
+              healthLevels[selectedYearIndex] === 'level-4' ? 'fill-level-4' :
+                healthLevels[selectedYearIndex] === 'level-5' ? 'fill-level-5' :
+                  'bg-gray-400'
+        }`} width="298" height="245" viewBox="0 0 298 245" xmlns="http://www.w3.org/2000/svg">
         <g filter="url(#filter0_d_50_212)">
           <path d="M218.5 6C218.5 6 166.375 6 149 57.9231C131.625 6 79.5 6 79.5 6C41.275 6 10 37.1538 10 75.2308C10 146.192 149 231 149 231C149 231 288 144.462 288 75.2308C288 37.1538 256.725 6 218.5 6Z" />
         </g>
