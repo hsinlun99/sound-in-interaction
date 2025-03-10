@@ -29,82 +29,75 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios }) => {
     };
   }, []);
 
+  // 監聽 isPlaying 狀態變化
+useEffect(() => {
+  console.log("isPlaying state changed:", isPlaying);
+}, [isPlaying]);
+
   // Play audio file for the current year
   const playYearAudio = useCallback((yearIndex: number) => {
-    // Check if we have a corresponding audio file
+    // 檢查是否有對應的音頻文件
     if (yearIndex >= 0 && yearIndex < yearAudios.length) {
       const audioPath = yearAudios[yearIndex];
       
-      // Stop any currently playing audio
+      // 停止當前播放的音頻
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
       }
       
-      // Create a new audio element
+      // 創建新的音頻元素
       const audio = new Audio(audioPath);
       audioRef.current = audio;
       
-      // Set isPlaying to true when audio starts playing
+      // 明確設置 isPlaying 為 true - 這會影響播放按鈕的顯示
       setIsPlaying(true);
       
-      // Play the audio
+      // 播放音頻
       audio.play().catch(error => {
         console.error("Error playing audio:", error);
-        setIsPlaying(false); // Reset playing state if there's an error
+        setIsPlaying(false); // 如果出錯，重置播放狀態
       });
       
-      // When audio ends, update isPlaying state
+      // 當音頻結束時，更新 isPlaying 狀態
       audio.onended = () => {
-        setIsPlaying(false);
+        setIsPlaying(false); // 重要：音頻結束時更新狀態
       };
     }
   }, [yearAudios]);
 
   // Start automatic playback of all years
-  const startPlayback = () => {
-    if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
-    
-    // Start from current selected year
-    let index = years.indexOf(selectedYear);
-    if (index === -1) index = 0;
-    
-    const playNext = () => {
-      if (!isPlaying) return;
+// 修改 startPlayback 函數
+const startPlayback = () => {
+  if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
+  
+  // 開始於當前選定的年份
+  let index = years.indexOf(selectedYear);
+  if (index === -1) index = 0;
+  
+  const playNext = () => {
+    if (index < years.length) {
+      const year = years[index];
+      setSelectedYear(year);
+      setPosition(tickPositions[index]);
+      setCurrentYearIndex(index);
       
-      if (index < years.length) {
-        const year = years[index];
-        setSelectedYear(year);
-        setPosition(tickPositions[index]);
-        setCurrentYearIndex(index);
-        
-        // Just play the audio without setting isPlaying again
-        // since we're already in playback mode
-        if (audioRef.current) {
-          audioRef.current.pause();
-          audioRef.current.currentTime = 0;
-        }
-        
-        // if (yearIndex >= 0 && yearIndex < yearAudios.length) {
-        //   const audio = new Audio(yearAudios[index]);
-        //   audioRef.current = audio;
-        //   audio.play().catch(error => {
-        //     console.error("Error playing audio:", error);
-        //   });
-        // }
-        
-        index++;
-        // Set delay for next year
-        playbackTimerRef.current = setTimeout(playNext, 1000);
-      } else {
-        // Playback complete, stop playing
-        setIsPlaying(false);
-      }
-    };
-    
-    setIsPlaying(true);
-    playNext();
+      // 播放當前索引的音頻
+      playYearAudio(index);
+      
+      index++;
+      // 設置下一年的延遲
+      playbackTimerRef.current = setTimeout(playNext, 3000); // 增加延遲讓音頻有時間播放完畢
+    } else {
+      // 播放完成，停止播放
+      setIsPlaying(false);
+    }
   };
+  
+  setIsPlaying(true);
+  // 立即播放第一個
+  playNext();
+};
 
   // Stop playback
   const stopPlayback = () => {
@@ -138,7 +131,7 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios }) => {
     const clickPosition = e.clientX - sliderRef.current.getBoundingClientRect().left;
     const percentPosition = (clickPosition / sliderWidth) * 100;
     
-    // Find the closest tick position
+    // 找到最近的刻度位置
     let closestIndex = 0;
     let closestDistance = Math.abs(tickPositions[0] - percentPosition);
     
@@ -154,14 +147,15 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios }) => {
     setSelectedYear(years[closestIndex]);
     setCurrentYearIndex(closestIndex);
     
-    // Stop auto sequence playback
+    // 停止自動序列播放
     if (playbackTimerRef.current) {
       clearTimeout(playbackTimerRef.current);
       playbackTimerRef.current = null;
     }
     
-    // Play audio for the selected year - this will set isPlaying to true
+    // 播放選定年份的音頻 - playYearAudio 會設置 isPlaying 為 true
     playYearAudio(closestIndex);
+    
   }, [tickPositions, years, playYearAudio]);
   
   // React click event handler
