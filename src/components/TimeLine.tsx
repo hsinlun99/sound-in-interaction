@@ -5,9 +5,11 @@ interface TimeLineProps {
   years: number[];
   yearAudios: string[];
   healthLevels: string[];
+  population: number[];
+  yLabels: number[];
 }
 
-const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels }) => {
+const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, population, yLabels }) => {
   const [selectedYear, setSelectedYear] = useState(years[0]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentYearIndex, setCurrentYearIndex] = useState(0);
@@ -178,9 +180,9 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels }) 
   }, [handleSliderChange]);
 
   return (
-    <div className="grid grid-rows-3 min-h-screen min-w-screen w-full max-w-lg mx-auto">
+    <div className="grid grid-rows-5 min-h-screen min-w-screen w-full max-w-lg mx-auto">
       {/* Button section - top 2/3 */}
-      <div className="row-span-2 flex items-center justify-center">
+      <div className="row-span-3 flex items-center justify-center">
         <div className="grid grid-cols-12 w-full">
           <button
             onClick={togglePlayback}
@@ -192,42 +194,56 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels }) 
       </div>
 
       {/* Timeline section - bottom 1/3 - now takes 7/12 of the width and is centered */}
-      <div className="row-span-1 flex flex-col justify-center">
-        <div className="mx-auto w-10/12">
-          <div className="text-center mb-4">
-            <h2 className="text-xl font-bold">Year: {selectedYear}</h2>
+      <div className="row-span-2 flex flex-col justify-center">
+        <div className="mx-auto w-full grid grid-cols-12 h-full">
+          {/* Y-axis labels column - Updated to properly align with grid lines */}
+          <div className="col-span-1 flex flex-col justify-between h-full">
+            {yLabels.slice().reverse().map((label, index) => (
+              <div key={index} className="flex items-center h-1">
+                <span className="mx-auto text-lg">{label}</span>
+              </div>
+            ))}
           </div>
 
-          <div
-            className="relative h-10"
-            ref={sliderRef}
-            onClick={handleClick}
-          >
-            {/* Track */}
-            <div className="absolute h-2 w-full bg-gray-300 rounded-full top-4"></div>
+          <div className="col-span-11">
+            {/* Grid lines - Updated for proper alignment */}
+            <div className="flex flex-col justify-between h-full w-9/12">
+              {yLabels.map((_, index) => (
+                <div key={index} className="h-1 w-full bg-gray-200 rounded-full"></div>
+              ))}
+            </div>
 
-            {/* Tick marks and labels */}
-            {years.map((year) => {
-              // Calculate position based on the year value relative to min and max years
-              const position = calculatePosition(year);
-
-              return (
-                <div
-                  key={year}
-                  className="absolute"
-                  style={{ left: `calc(${position}% - 8px)`, top: 12 }}
-                >
-                  <div className={`w-4 h-4 bg-gray-500 rounded-full`}></div>
-                  <div className="relative -left-3 mt-6 text-sm">{year}</div>
-                </div>
-              );
-            })}
-
-            {/* Thumb - calculate position dynamically */}
             <div
-              className="absolute w-6 h-6 bg-blue-500 rounded-full -ml-3 top-2 cursor-pointer shadow-md hover:bg-blue-600 transition-colors"
-              style={{ left: `${calculatePosition(selectedYear)}%` }}
-            ></div>
+              className="relative h- mt-14 w-9/12"
+              ref={sliderRef}
+              onClick={handleClick}
+            >
+              {/* Track */}
+              <div className="absolute h-2 w-full bg-gray-300 rounded-full top-4"></div>
+
+              {/* Tick marks and labels */}
+              {years.map((year) => {
+                // Calculate position based on the year value relative to min and max years
+                const position = calculatePosition(year);
+
+                return (
+                  <div
+                    key={year}
+                    className="absolute"
+                    style={{ left: `calc(${position}% - 8px)`, top: 12 }}
+                  >
+                    <div className={`w-4 h-4 bg-gray-500 rounded-full`}></div>
+                    <div className="relative -left-3 mt-6 text-sm">{year}</div>
+                  </div>
+                );
+              })}
+
+              {/* Thumb - calculate position dynamically */}
+              <div
+                className="absolute w-6 h-6 bg-blue-500 rounded-full -ml-3 top-2 cursor-pointer shadow-md hover:bg-blue-600 transition-colors"
+                style={{ left: `${calculatePosition(selectedYear)}%` }}
+              ></div>
+            </div>
           </div>
         </div>
       </div>
