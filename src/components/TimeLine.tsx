@@ -179,6 +179,9 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
     handleSliderChange(e.nativeEvent);
   }, [handleSliderChange]);
 
+  // Calculate max population for scaling
+  const maxPopulation = Math.max(...population);
+
   return (
     <div className="grid grid-rows-5 h-screen w-full max-w-full mx-auto overflow-hidden">
       {/* Button section - top 3/5 */}
@@ -207,13 +210,42 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
           </div>
 
           {/* Main grid area - expanded to col-span-11 to maintain relative proportions */}
-          <div className="col-span-11">
+          <div className="col-span-11 relative">
             {/* Grid lines */}
             <div className="flex flex-col justify-between h-full w-full">
               {yLabels.map((_, index) => (
                 <div key={index} className="h-1 w-full bg-gray-200 rounded-full"></div>
               ))}
             </div>
+            
+            {/* Population points on the bottom grid line */}
+            {years.map((year, idx) => {
+              // Calculate horizontal position based on the year
+              const xPosition = calculatePosition(year);
+              
+              // Calculate the size of the population point (scaled relative to max population)
+              const pointSize = Math.max(4, (population[idx] / maxPopulation) * 20);
+              
+              return (
+                <div
+                  key={`pop-${year}`}
+                  className="absolute"
+                  style={{ 
+                    left: `${xPosition}%`,
+                    bottom: 0, // Position at the bottom grid line
+                    transform: 'translate(-50%, 50%)' // Center the point
+                  }}
+                >
+                  <div 
+                    className="bg-green-500 rounded-full"
+                    style={{ 
+                      width: `${pointSize}px`, 
+                      height: `${pointSize}px` 
+                    }}
+                  ></div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
