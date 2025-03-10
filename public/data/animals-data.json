@@ -12,7 +12,7 @@
       "/audio/level-3.wav",
       "/audio/level-5.wav"
     ],
-    "healthLevel": [
+    "healthLevels": [
       "level-1",
       "level-1",
       "level-1",
@@ -35,7 +35,7 @@
       "/audio/level-2.wav",
       "/audio/level-5.wav"
     ],
-    "healthLevel": [
+    "healthLevels": [
       "level-1",
       "level-1",
       "level-3",
@@ -57,7 +57,7 @@
       "/audio/level-4.wav",
       "/audio/level-5.wav"
     ],
-    "healthLevel": [
+    "healthLevels": [
       "level-1",
       "level-1",
       "level-1",

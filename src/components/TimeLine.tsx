@@ -4,10 +4,10 @@ import PlayButton from './PlayButton';
 interface TimeLineProps {
   years: string[];
   yearAudios: string[];
-  healthLevel: string[];
+  healthLevels: string[];
 }
 
-const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevel }) => {
+const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels }) => {
   const [selectedYear, setSelectedYear] = useState(years[0]);
   const [position, setPosition] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -201,7 +201,7 @@ const startPlayback = () => {
             onClick={togglePlayback}
             className="col-start-4 col-span-6 flex items-center justify-center rounded-full focus:outline-none"
           >
-            <PlayButton isPlaying={isPlaying} />
+            <PlayButton isPlaying={isPlaying} selectedYear={selectedYear} healthLevels={healthLevels} />
           </button>
         </div>
       </div>
@@ -222,14 +222,14 @@ const startPlayback = () => {
           
           {/* Tick marks and labels */}
           {years.map((year, index) => (
-            console.log(healthLevel[index]),
+            console.log(healthLevels[index]),
             <div key={year} className="absolute" style={{ left: `${tickPositions[index]}%`, top: 0 }}>
               <div className={`w-1 h-4 ${
-              healthLevel[index] === 'level-1' ? 'bg-level-1' :
-              healthLevel[index] === 'level-2' ? 'bg-level-2' :
-              healthLevel[index] === 'level-3' ? 'bg-level-3' :
-              healthLevel[index] === 'level-4' ? 'bg-level-4' :
-              healthLevel[index] === 'level-5' ? 'bg-level-5' :
+              healthLevels[index] === 'level-1' ? 'bg-level-1' :
+              healthLevels[index] === 'level-2' ? 'bg-level-2' :
+              healthLevels[index] === 'level-3' ? 'bg-level-3' :
+              healthLevels[index] === 'level-4' ? 'bg-level-4' :
+              healthLevels[index] === 'level-5' ? 'bg-level-5' :
               'bg-gray-400'
             }`}></div>
               <div className="relative -left-3 mt-6 text-sm">{year}</div>

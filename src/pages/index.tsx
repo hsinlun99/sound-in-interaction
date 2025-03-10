@@ -46,19 +46,19 @@ export default function Home() {
         {/* Content for animals - only show the active one */}
         {activeAnimal === "eagle" && (
           <div className="row-span-full">
-            <TimeLine years={eagle.years} yearAudios={eagle.yearAudios} healthLevel={eagle.healthLevel} />
+            <TimeLine years={eagle.years} yearAudios={eagle.yearAudios} healthLevels={eagle.healthLevels} />
           </div>
         )}
 
         {activeAnimal === "goose" && (
           <div className="row-span-full">
-            <TimeLine years={goose.years} yearAudios={goose.yearAudios} healthLevel={goose.healthLevel} />
+            <TimeLine years={goose.years} yearAudios={goose.yearAudios} healthLevels={goose.healthLevels} />
           </div>
         )}
 
         {activeAnimal === "wolverine" && (
           <div className="row-span-full">
-            <TimeLine years={wolverine.years} yearAudios={wolverine.yearAudios} healthLevel={wolverine.healthLevel} />
+            <TimeLine years={wolverine.years} yearAudios={wolverine.yearAudios} healthLevels={wolverine.healthLevels} />
             {/* Additional wolverine content */}
           </div>
         )}
