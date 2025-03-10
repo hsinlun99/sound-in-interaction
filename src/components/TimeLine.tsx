@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import Image from 'next/image';
+import PlayButton from './PlayButton';
 
 interface TimeLineProps {
   years: string[];
@@ -201,15 +201,7 @@ const startPlayback = () => {
             onClick={togglePlayback}
             className="col-start-4 col-span-6 flex items-center justify-center rounded-full focus:outline-none"
           >
-            <Image
-              className="w-full h-auto object-contain"
-              src={isPlaying ? "/image/player-pause.svg" : "/image/player-play.svg"}
-              alt={isPlaying ? "Pause" : "Play"}
-              width={0}
-              height={0}
-              sizes="100vh"
-              priority
-            />
+            <PlayButton isPlaying={isPlaying} />
           </button>
         </div>
       </div>
