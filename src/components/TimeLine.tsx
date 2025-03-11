@@ -180,7 +180,7 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
 
       <AnimalFact facts={facts} isAnswerShown={isAnswerShown} animalId={animalId} />
 
-      <div className="row-span-3 flex items-center justify-center">
+      <div className="row-span-2 flex items-center justify-center">
         <div className="grid grid-cols-12 w-full max-w-xl mx-auto">
           <button
             onClick={togglePlayback}
@@ -188,6 +188,20 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
           >
             <PlayButton isPlaying={isPlaying} selectedYearIndex={currentYearIndex} healthLevels={healthLevels} isAnswerShown={isAnswerShown} />
           </button>
+        </div>
+      </div>
+      
+      <div className="row-span-1 flex items-center justify-center">
+      <div className="w-full max-w-6xl mx-auto grid grid-cols-12 h-2/3">
+          {/* Y-axis title */}
+          <div className="col-span-1 flex flex-col justify-end h-full">
+              <div className="flex items-center h-1">
+                <span className="text-sm">Population</span>
+              </div>
+          </div>
+
+          <div className="col-span-11 relative">
+          </div>
         </div>
       </div>
 
