@@ -196,7 +196,7 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
           {/* Y-axis title */}
           <div className="col-span-1 flex flex-col justify-end h-full">
               <div className="flex items-center h-1">
-                <span className="text-sm font-bold">Population</span>
+                <span className="text-sm font-bold mb-5">Population</span>
               </div>
           </div>
 
