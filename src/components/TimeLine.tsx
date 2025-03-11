@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import PlayButton from './PlayButton';
+import AnimalFact from './AnimalFact';
 
 interface TimeLineProps {
   years: number[];
@@ -7,9 +8,10 @@ interface TimeLineProps {
   healthLevels: string[];
   population: number[];
   yLabels: number[];
+  facts: string[];
 }
 
-const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, population, yLabels }) => {
+const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, population, yLabels, facts }) => {
   const [selectedYear, setSelectedYear] = useState(years[0]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentYearIndex, setCurrentYearIndex] = useState(0);
@@ -197,6 +199,7 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
   return (
     <div className="grid grid-rows-5 h-screen w-full max-w-full mx-auto overflow-hidden">
       {/* Button section - top 3/5 */}
+
       <div className="absolute top-4 right-4 flex items-center gap-2">
         {/* off */}
         <span className="text-sm font-medium text-gray-400">OFF</span>
@@ -215,6 +218,9 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
         {/* on */}
         <span className="text-sm font-medium text-gray-400">ON</span>
       </div>
+
+      <AnimalFact facts={facts} isAnswerShown={isAnswerShown} />
+
       <div className="row-span-3 flex items-center justify-center">
         <div className="grid grid-cols-12 w-full max-w-xl mx-auto">
           <button
