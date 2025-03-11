@@ -156,7 +156,7 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
   };
 
   return (
-    <div className="grid grid-rows-5 h-screen w-full max-w-full mx-auto overflow-hidden">
+    <div className="grid grid-rows-9 h-screen w-full max-w-full mx-auto overflow-hidden">
       {/* Button section - top 3/5 */}
 
       <div className="absolute top-4 right-4 flex items-center gap-2">
@@ -180,7 +180,7 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
 
       <AnimalFact facts={facts} isAnswerShown={isAnswerShown} animalId={animalId} />
 
-      <div className="row-span-2 flex items-center justify-center">
+      <div className="row-span-4 flex items-end justify-center">
         <div className="grid grid-cols-12 w-full max-w-xl mx-auto">
           <button
             onClick={togglePlayback}
@@ -196,17 +196,15 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
           {/* Y-axis title */}
           <div className="col-span-1 flex flex-col justify-end h-full">
               <div className="flex items-center h-1">
-                <span className="text-sm">Population</span>
+                <span className="text-sm font-bold">Population</span>
               </div>
           </div>
 
-          <div className="col-span-11 relative">
-          </div>
         </div>
       </div>
 
       {/* Timeline section - bottom 2/5 */}
-      <div className="row-span-2 flex flex-col justify-start px-4">
+      <div className="row-span-4 flex flex-col justify-start px-4">
         {/* Increased max-width for wider timeline */}
         <div className="w-full max-w-6xl mx-auto grid grid-cols-12 h-2/3">
           {/* Y-axis labels column */}
