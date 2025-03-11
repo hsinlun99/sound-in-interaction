@@ -182,12 +182,12 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
   // Calculate max and min population for scaling
   const maxPopulation = Math.max(...population);
   const minPopulation = Math.min(...population);
-  
+
   // Function to calculate vertical position based on population value
   const calculateVerticalPosition = (popValue: number) => {
     // If all values are the same, position in the middle
     if (maxPopulation === minPopulation) return 50;
-    
+
     // Calculate percentage from bottom (0%) to top (100%)
     // Normalize the population value between min and max
     return ((popValue - minPopulation) / (maxPopulation - minPopulation)) * 100;
@@ -228,27 +228,33 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
                 <div key={index} className="h-1 w-full bg-gray-200 rounded-full"></div>
               ))}
             </div>
-            
+
             {/* Population points with vertical positioning based on value */}
             {years.map((year, idx) => {
               // Calculate horizontal position based on the year
               const xPosition = calculatePosition(year);
-              
+
               // Calculate vertical position (0% = bottom, 100% = top)
               const verticalPercentage = calculateVerticalPosition(population[idx]);
-              
+
               return (
                 <div
                   key={`pop-${year}`}
                   className="absolute"
-                  style={{ 
+                  style={{
                     left: `${xPosition}%`,
                     bottom: `${verticalPercentage}%`, // Position vertically based on value
                     transform: 'translate(-50%, 50%)' // Center the point
                   }}
                 >
-                  <div 
-                    className="w-4 h-4 bg-green-500 rounded-full"
+                  <div
+                    className={`w-4 h-4 ${healthLevels[idx] === 'level-1' ? 'bg-level-1' :
+                      healthLevels[idx] === 'level-2' ? 'bg-level-2' :
+                        healthLevels[idx] === 'level-3' ? 'bg-level-3' :
+                          healthLevels[idx] === 'level-4' ? 'bg-level-4' :
+                            healthLevels[idx] === 'level-5' ? 'bg-level-5' :
+                              'bg-green-400'
+                      } rounded-full`}
                   ></div>
                 </div>
               );
