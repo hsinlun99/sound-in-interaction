@@ -18,7 +18,6 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
   const [isAnswerShown, setIsAnswerShown] = useState(false);
 
   const sliderRef = useRef<HTMLDivElement | null>(null);
-  const playbackTimerRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Reset selected year when years array changes
@@ -39,7 +38,7 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
       : 50; // Default to middle if all years are the same
   }, [years]);
 
-  // Play audio file for the current year
+  // Play audio file for the current year with looping
   const playYearAudio = useCallback((yearIndex: number) => {
     // 檢查是否有對應的音頻文件
     if (yearIndex >= 0 && yearIndex < yearAudios.length) {
@@ -55,6 +54,9 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
       const audio = new Audio(audioPath);
       audioRef.current = audio;
 
+      // Always enable looping
+      audio.loop = true;
+
       // 明確設置 isPlaying 為 true - 這會影響播放按鈕的顯示
       setIsPlaying(true);
 
@@ -63,76 +65,36 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
         console.error("Error playing audio:", error);
         setIsPlaying(false); // 如果出錯，重置播放狀態
       });
-
-      // 當音頻結束時，更新 isPlaying 狀態
-      audio.onended = () => {
-        setIsPlaying(false); // 重要：音頻結束時更新狀態
-      };
     }
   }, [yearAudios]);
 
-  // Start automatic playback of all years
-  const startPlayback = useCallback(() => {
-    if (playbackTimerRef.current) clearTimeout(playbackTimerRef.current);
-
-    // 開始於當前選定的年份
-    let index = years.indexOf(selectedYear);
-    if (index === -1) index = 0;
-
-    const playNext = () => {
-      if (index < years.length) {
-        const year = years[index];
-        setSelectedYear(year);
-        setCurrentYearIndex(index);
-
-        // 播放當前索引的音頻
-        playYearAudio(index);
-
-        index++;
-        // 設置下一年的延遲
-        playbackTimerRef.current = setTimeout(playNext, 3000); // 增加延遲讓音頻有時間播放完畢
-      } else {
-        // 播放完成，停止播放
-        setIsPlaying(false);
+  // Toggle playback state - now just starts or stops the current year's audio
+  const togglePlayback = useCallback(() => {
+    if (isPlaying) {
+      // Stop playback
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
       }
-    };
-
-    setIsPlaying(true);
-    // 立即播放第一個
-    playNext();
-  }, [years, selectedYear, playYearAudio]);
-
-  // Stop playback
-  const stopPlayback = useCallback(() => {
-    if (playbackTimerRef.current) {
-      clearTimeout(playbackTimerRef.current);
-      playbackTimerRef.current = null;
+      setIsPlaying(false);
+    } else {
+      // Play the current year's audio with looping
+      const index = years.indexOf(selectedYear);
+      if (index !== -1) {
+        playYearAudio(index);
+      }
     }
-
-    // Stop any playing audio
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-
-    setIsPlaying(false);
-  }, []);
+  }, [isPlaying, playYearAudio, selectedYear, years]);
 
   // Clean up on unmount
   useEffect(() => {
     return () => {
-      stopPlayback();
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
     };
-  }, [stopPlayback]);
-
-  // Toggle playback state
-  const togglePlayback = useCallback(() => {
-    if (isPlaying) {
-      stopPlayback();
-    } else {
-      startPlayback();
-    }
-  }, [isPlaying, startPlayback, stopPlayback]);
+  }, []);
 
   // Handle slider thumb movement
   const handleSliderChange = useCallback((e: MouseEvent) => {
@@ -166,16 +128,12 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
     setSelectedYear(closestYear);
     setCurrentYearIndex(closestIndex);
 
-    // 停止自動序列播放
-    if (playbackTimerRef.current) {
-      clearTimeout(playbackTimerRef.current);
-      playbackTimerRef.current = null;
+    // If already playing, start playing the new year's audio
+    if (isPlaying) {
+      playYearAudio(closestIndex);
     }
 
-    // 播放選定年份的音頻 - playYearAudio 會設置 isPlaying 為 true
-    playYearAudio(closestIndex);
-
-  }, [years, playYearAudio]);
+  }, [years, playYearAudio, isPlaying]);
 
   // React click event handler
   const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
