@@ -13,6 +13,7 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
   const [selectedYear, setSelectedYear] = useState(years[0]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentYearIndex, setCurrentYearIndex] = useState(0);
+  const [isAnswerShown, setIsAnswerShown] = useState(false);
 
   const sliderRef = useRef<HTMLDivElement | null>(null);
   const playbackTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -196,6 +197,24 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
   return (
     <div className="grid grid-rows-5 h-screen w-full max-w-full mx-auto overflow-hidden">
       {/* Button section - top 3/5 */}
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        {/* off */}
+        <span className="text-sm font-medium text-gray-400">OFF</span>
+
+        {/* Toggle Button */}
+        <button
+          onClick={() => setIsAnswerShown(prev => !prev)}
+          className={`w-14 h-8 rounded-full ${isAnswerShown ? 'bg-[#5F75D7]' : 'bg-[#636363]'
+            } flex items-center px-1 transition-colors duration-200`}
+        >
+          <div
+            className={`w-6 h-6 bg-white rounded-full shadow-md transform ${isAnswerShown ? 'translate-x-6' : 'translate-x-0'
+              } transition-transform duration-200`}
+          />
+        </button>
+        {/* on */}
+        <span className="text-sm font-medium text-gray-400">ON</span>
+      </div>
       <div className="row-span-3 flex items-center justify-center">
         <div className="grid grid-cols-12 w-full max-w-xl mx-auto">
           <button
@@ -230,7 +249,7 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
             </div>
 
             {/* Population points with vertical positioning based on value */}
-            {years.map((year, idx) => {
+            {isAnswerShown && years.map((year, idx) => {
               // Calculate horizontal position based on the year
               const xPosition = calculatePosition(year);
 
