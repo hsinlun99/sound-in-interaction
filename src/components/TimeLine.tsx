@@ -9,9 +9,10 @@ interface TimeLineProps {
   population: number[];
   yLabels: number[];
   facts: string[];
+  animalId: string;
 }
 
-const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, population, yLabels, facts }) => {
+const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, population, yLabels, facts, animalId }) => {
   const [selectedYear, setSelectedYear] = useState(years[0]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentYearIndex, setCurrentYearIndex] = useState(0);
@@ -177,7 +178,7 @@ const TimeLine: React.FC<TimeLineProps> = ({ years, yearAudios, healthLevels, po
         <span className="text-sm font-medium text-gray-400">ON</span>
       </div>
 
-      <AnimalFact facts={facts} isAnswerShown={isAnswerShown} />
+      <AnimalFact facts={facts} isAnswerShown={isAnswerShown} animalId={animalId} />
 
       <div className="row-span-3 flex items-center justify-center">
         <div className="grid grid-cols-12 w-full max-w-xl mx-auto">
