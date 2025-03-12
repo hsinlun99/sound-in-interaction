@@ -508,7 +508,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
       </div>
 
       {/* Control buttons */}
-      <div className="flex justify-between w-full mt-2">
+      <div className="flex justify-between w-full mt-5">
         <button
           onClick={handleMoveLeft}
           disabled={position <= 0}
