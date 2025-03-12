@@ -452,16 +452,20 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
           {/* Slider track - aligned with grid */}
           <div className="relative w-full h-2 bg-gray-200 rounded-full mb-2">
             {/* Tick marks for each year */}
-            {years.map((_, index) => {
-              const tickPosition = (index / (years.length - 1)) * 100;
-              return (
-                <div
-                  key={index}
-                  className="absolute w-1 h-3 bg-gray-400 -mt-0.5 transform -translate-x-1/2"
-                  style={{ left: `${tickPosition}%` }}
-                ></div>
-              );
-            })}
+            <div className="absolute w-full h-0" style={{ top: '10px' }}>
+              {years.map((_, index) => {
+                // 獲取年份標籤的位置百分比
+                const tickPosition = (index / (years.length - 1)) * 100;
+                const isCurrentYear = index === currentIndex;
+                return (
+                  <div
+                    key={index}
+                    className={`absolute w-1 ${isCurrentYear ? 'h-4 bg-blue-500' : 'h-3 bg-gray-400'} -translate-x-1/2`}
+                    style={{ left: `${tickPosition}%`, bottom: '0' }}
+                  ></div>
+                );
+              })}
+            </div>
             {/* Slider thumb */}
             <div
               className="absolute w-6 h-6 bg-blue-500 rounded-full -ml-3 -mt-2 cursor-pointer shadow-md hover:bg-blue-600 transition-colors z-10"
@@ -471,28 +475,34 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
 
           {/* Year labels */}
           <div className="relative w-full flex justify-between mb-4">
-            {years.map((year, index) => (
-              <div
-                key={year}
-                className={`
-                  text-sm 
-                  ${currentIndex === index ? 'text-blue-500 font-bold' : 'text-gray-500'} 
-                  cursor-pointer 
-                  hover:text-blue-600 
-                  hover:scale-110 
-                  transition-all 
-                  duration-200
-                  hover:font-semibold
-                  px-2 
-                  py-1 
-                  rounded-md 
-                  hover:bg-blue-50
-                `}
-                onClick={() => handleYearClick(index)}
-              >
-                {year}
-              </div>
-            ))}
+            {years.map((year, index) => {
+              // 計算標籤位置，確保與刻度對齊
+              const labelPosition = (index / (years.length - 1)) * 100;
+              return (
+                <div
+                  key={year}
+                  className={`
+                    absolute text-sm 
+                    ${currentIndex === index ? 'text-blue-500 font-bold' : 'text-gray-500'} 
+                    cursor-pointer 
+                    hover:text-blue-600 
+                    hover:scale-110 
+                    transition-all 
+                    duration-200
+                    hover:font-semibold
+                    px-2 
+                    py-1 
+                    rounded-md 
+                    hover:bg-blue-50
+                    -translate-x-1/2
+                  `}
+                  style={{ left: `${labelPosition}%` }}
+                  onClick={() => handleYearClick(index)}
+                >
+                  {year}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
