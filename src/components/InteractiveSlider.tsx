@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import PlayButton from "./PlayButton";
 
 interface InteractiveSliderProps {
@@ -196,7 +196,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
   };
 
   // Function to calculate volume based on distance from the thumb
-  const calculateVolume = (yearPosition: number, thumbPosition: number) => {
+  const calculateVolume = useCallback((yearPosition: number, thumbPosition: number) => {
     // Convert years to positions on the slider (0-100%)
     const yearIndex = years.indexOf(yearPosition);
     const yearPositionPercent = (yearIndex / (years.length - 1)) * 100;
@@ -220,11 +220,10 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
     }
 
     return volume;
-  };
+  }, [years]);
 
   // Update volumes based on thumb position
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const updateVolumes = (thumbPosition: number) => {
+  const updateVolumes = useCallback((thumbPosition: number) => {
     if (!audioContext || !isPlaying) return;
 
     console.log(`Updating volumes for position: ${thumbPosition}`);
@@ -238,18 +237,13 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
         console.log(`Updated volume for ${audioData.audioPath}: ${volume}`);
       }
     });
-  };
+  }, [audioContext, isPlaying, audioSourcesRef, calculateVolume]);
 
   // Update volumes whenever the position changes
   useEffect(() => {
     updateVolumes(position);
 
-    // For debugging
-    console.log("audio context", audioContext?.state);
-    console.log("Current year:", years[currentIndex]);
-    console.log("Current audio:", yearAudios[currentIndex]);
-    console.log("Is playing:", isPlaying);
-  }, [position, currentIndex, years, yearAudios, audioContext, isPlaying, updateVolumes]);
+  }, [position, updateVolumes]);
 
   return (
     <>
