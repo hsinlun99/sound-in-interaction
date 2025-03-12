@@ -67,7 +67,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="col-span-6 flex mx-auto items-center min-w-6/12">
+            <div className="col-span-6 flex mx-auto items-center min-w-8/12">
               <div className="w-full">
                 {activeAnimal === "eagle" && (
                   <InteractiveSlider years={eagle.years} audioContext={audioContext} yearAudios={eagle.yearAudios} healthLevels={eagle.healthLevels} population={eagle.population} yLabels={eagle.yLabels} />
