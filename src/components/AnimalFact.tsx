@@ -1,33 +1,38 @@
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
 interface AnimalFactProps {
   animalId: string;
   facts: string[];
-  isAnswerShown: boolean;
 }
 
+const AnimalFact: React.FC<AnimalFactProps> = ({ animalId, facts }) => {
+  const [currentFactIndex, setCurrentFactIndex] = useState(0);
 
-const AnimalFact: React.FC<AnimalFactProps> = ({ animalId, facts, isAnswerShown }) => {
-  if (!isAnswerShown) {
-    return null;
-  }
-  let factTitle = "";
-  switch (animalId) {
-    case "eagle":
-      factTitle = "Fact about Golden Eagle:";
-      break;
-    case "goose":
-      factTitle = "Fact about Goose:";
-      break;
-    case "wolverine":
-      factTitle = "Fact about Wolverine:";
-      break;
-    default:
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setCurrentFactIndex((currentFactIndex + 1) % facts.length);
+    }, 5000);
 
-      break;
-  }
+    return () => clearInterval(intervalId);
+  }, [currentFactIndex, facts.length]);
+
   return (
-    <div className="fixed top-1/3 right-10 transform -translate-y-1/2 w-80 h-70 p-2 border border-transparent rounded-md overflow-y-auto break-words bg-white shadow">
-      <h3 className="text-lg font-semibold mb-2">{factTitle}</h3>
-      {facts[Math.floor(Math.random() * facts.length)]}
+    <div className="flex flex-col items-center w-full mx-auto p-4 max-w-6xl">
+      <div className="h-50 w-180 p-2 border border-transparent rounded-md overflow-hidden bg-white shadow">
+        <h3 className="text-lg font-semibold mb-2">{`Facts about ${animalId}`}</h3>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentFactIndex}
+            initial={{ x: 300, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -300, opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            {facts[currentFactIndex]}
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
