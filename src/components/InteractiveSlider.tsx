@@ -249,7 +249,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
       if (audioData.source && audioData.isPlaying) {
         try {
           audioData.source.stop(0);
-          // console.log(`Stopped playback for ${audioData.audioPath}`);
+          console.log(`Stopped playback for ${audioData.audioPath}`);
         } catch (error) {
           console.error(`Error stopping audio source: ${error}`);
         }
