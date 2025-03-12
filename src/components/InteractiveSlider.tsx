@@ -35,9 +35,15 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
   // Calculate current year index
   const getYearIndex = useCallback(
     (pos: number) => {
-      const segmentCount = years.length - 1;
-      const segmentSize = 100 / segmentCount;
-      return Math.round(pos / segmentSize);
+      for (let i = 0; i < years.length; i++) {
+        const exactPosition = (i / (years.length - 1)) * 100;
+        // 使用小的容差值判斷是否在精確位置
+        if (Math.abs(pos - exactPosition) < 0.5) { // 0.5%的容差範圍
+          return i;
+        }
+      }
+      // 如果不在任何精確位置，返回-1表示沒有選中任何年份
+      return -1;
     },
     [years]
   );
@@ -468,7 +474,20 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
             {years.map((year, index) => (
               <div
                 key={year}
-                className={`text-sm ${index === currentIndex ? 'text-blue-500 font-bold' : 'text-gray-500'}`}
+                className={`
+                  text-sm 
+                  ${currentIndex === index ? 'text-blue-500 font-bold' : 'text-gray-500'} 
+                  cursor-pointer 
+                  hover:text-blue-600 
+                  hover:scale-110 
+                  transition-all 
+                  duration-200
+                  hover:font-semibold
+                  px-2 
+                  py-1 
+                  rounded-md 
+                  hover:bg-blue-50
+                `}
                 onClick={() => handleYearClick(index)}
               >
                 {year}
