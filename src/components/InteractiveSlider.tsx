@@ -49,8 +49,30 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
     [years]
   );
 
+  const getNearestYearIndex = useCallback(
+    (pos: number) => {
+      let nearestIndex = 0;
+      let minDistance = 100;
+      
+      for (let i = 0; i < years.length; i++) {
+        const exactPosition = (i / (years.length - 1)) * 100;
+        const distance = Math.abs(pos - exactPosition);
+        
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestIndex = i;
+        }
+      }
+      
+      return nearestIndex;
+    },
+    [years]
+  );
+
   // Determine current year
   const currentIndex = getYearIndex(position);
+
+  const playButtonIndex = currentIndex !== -1 ? currentIndex : getNearestYearIndex(position);
 
   // Movement step size (smaller value for smoother movement)
   const moveStep = 3;
@@ -102,7 +124,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
           const isHeartbeat = audioPath.includes("heartbeat");
 
           try {
-            console.log(`Loading audio: ${audioPath}`);
+            // console.log(`Loading audio: ${audioPath}`);
             // Fetch audio file based on the path
             const response = await fetch(audioPath);
             const arrayBuffer = await response.arrayBuffer();
@@ -130,7 +152,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
               isHeartbeat, // Flag to identify heartbeat audio
               volume: 0
             });
-            console.log(`Successfully loaded audio: ${audioPath}`);
+            // console.log(`Successfully loaded audio: ${audioPath}`);
           } catch (error) {
             console.error(`Error loading audio for year ${year} (${audioPath}):`, error);
             // Add empty placeholder for failed loads to maintain index alignment
@@ -180,7 +202,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
   const startAllAudio = () => {
     if (!audioContext) return;
 
-    console.log("Starting all audio sources");
+    // console.log("Starting all audio sources");
 
     // First, ensure all previous sources are stopped
     stopAllAudio();
@@ -238,7 +260,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
 
   // Stop all audio sources
   const stopAllAudio = () => {
-    console.log("Stopping all audio sources");
+    // console.log("Stopping all audio sources");
 
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
@@ -249,7 +271,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
       if (audioData.source && audioData.isPlaying) {
         try {
           audioData.source.stop(0);
-          console.log(`Stopped playback for ${audioData.audioPath}`);
+          // console.log(`Stopped playback for ${audioData.audioPath}`);
         } catch (error) {
           console.error(`Error stopping audio source: ${error}`);
         }
@@ -427,7 +449,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
           >
             <PlayButton
               isPlaying={isPlaying}
-              selectedYearIndex={currentIndex}
+              selectedYearIndex={playButtonIndex}
               healthLevels={healthLevels}
               isAnswerShown={isAnswerShown}
               volume={currentVolume} // Pass the current volume to PlayButton
