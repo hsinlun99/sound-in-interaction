@@ -19,21 +19,28 @@ interface AudioSource {
   isPlaying: boolean;
   year: number;
   audioPath: string;
+  analyser?: AnalyserNode; // Add analyser node for volume detection
+  volume?: number; // Store current volume
 }
 
 const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioContext, yearAudios, healthLevels, population, yLabels, isAnswerShown }) => {
   const [position, setPosition] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [audioSources, setAudioSources] = useState<AudioSource[]>([]);
+  const [, setAudioSources] = useState<AudioSource[]>([]);
   const audioSourcesRef = useRef<AudioSource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentVolume, setCurrentVolume] = useState(0); // Track the current volume
+  const animationFrameRef = useRef<number | null>(null); // For animation frame
 
   // Calculate current year index
-  const getYearIndex = (pos: number) => {
-    const segmentCount = years.length - 1;
-    const segmentSize = 100 / segmentCount;
-    return Math.round(pos / segmentSize);
-  };
+  const getYearIndex = useCallback(
+    (pos: number) => {
+      const segmentCount = years.length - 1;
+      const segmentSize = 100 / segmentCount;
+      return Math.round(pos / segmentSize);
+    },
+    [years]
+  );
 
   // Determine current year
   const currentIndex = getYearIndex(position);
@@ -80,13 +87,21 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
           gainNode.connect(audioContext.destination);
           gainNode.gain.value = 0; // Start with volume at 0
 
+          // Create analyser node
+          const analyser = audioContext.createAnalyser();
+          analyser.fftSize = 256; // Smaller FFT size for better performance
+          analyser.smoothingTimeConstant = 0.5;
+          gainNode.connect(analyser);
+
           sources.push({
             buffer: audioBuffer,
             source: null,
             gainNode,
+            analyser,
             isPlaying: false,
             year,
-            audioPath
+            audioPath,
+            volume: 0
           });
           console.log(`Successfully loaded audio: ${audioPath}`);
         } catch (error) {
@@ -98,7 +113,8 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
             gainNode: null,
             isPlaying: false,
             year,
-            audioPath
+            audioPath,
+            volume: 0
           });
         }
       }
@@ -113,6 +129,9 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
     // Cleanup function
     return () => {
       stopAllAudio();
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
     };
   }, [audioContext, years, yearAudios]);
 
@@ -149,6 +168,17 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
         // Ensure the gain node is reconnected to the destination
         audioData.gainNode.disconnect();
         audioData.gainNode.connect(audioContext.destination);
+
+        // Connect the analyser if it exists
+        if (audioData.analyser) {
+          audioData.gainNode.disconnect();
+          audioData.gainNode.connect(audioContext.destination);
+          audioData.gainNode.connect(audioData.analyser);
+          source.connect(audioData.gainNode);
+        }
+
+
+
         source.connect(audioData.gainNode);
 
         // Set initial volume based on position
@@ -172,11 +202,19 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
 
     setAudioSources(updatedSources);
     audioSourcesRef.current = updatedSources;
+
+    // Start the audio analysis loop
+    startAudioAnalysis();
   };
 
   // Stop all audio sources
   const stopAllAudio = () => {
     console.log("Stopping all audio sources");
+
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
 
     const updatedSources = audioSourcesRef.current.map(audioData => {
       if (audioData.source && audioData.isPlaying) {
@@ -191,14 +229,72 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
       return {
         ...audioData,
         source: null,
-        isPlaying: false
+        isPlaying: false,
+        volume: 0
       };
     });
 
     setAudioSources(updatedSources);
     audioSourcesRef.current = updatedSources;
+    setCurrentVolume(0); // Reset volume when stopped
   };
 
+  // Function to analyze audio data and update volume levels
+  const analyzeAudio = useCallback(() => {
+    if (!isPlaying || !audioContext) return;
+
+    // Get the current index to find the closest audio source
+    const currentYearIndex = getYearIndex(position);
+    const currentYearValue = years[currentYearIndex];
+
+    // 找出当前播放的音频源并计算其实际音量
+    let maxVolume = 0;
+    let dataAvailable = false;
+
+    audioSourcesRef.current.forEach((audioData) => {
+      if (!audioData.analyser || !audioData.isPlaying) return;
+
+      // 获取频率数据
+      const dataArray = new Uint8Array(audioData.analyser.frequencyBinCount);
+      audioData.analyser.getByteFrequencyData(dataArray);
+
+      // 计算平均音量
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        sum += dataArray[i];
+      }
+      const avgVolume = sum / dataArray.length / 255; // 标准化到 0-1
+
+      // 如果这是当前年份的音频，考虑其音量作为UI显示
+      if (audioData.year === currentYearValue) {
+        maxVolume = Math.max(maxVolume, avgVolume);
+        dataAvailable = true;
+      }
+    });
+
+    // 只有在有数据时才更新音量
+    if (dataAvailable) {
+      // 增强音量效果
+      const enhancedVolume = Math.pow(maxVolume, 0.5);
+
+      // 平滑过渡
+      setCurrentVolume(prevVolume => {
+        return prevVolume * 0.7 + enhancedVolume * 0.3; // 增加新值的权重
+      });
+    }
+
+    // 继续分析循环
+    animationFrameRef.current = requestAnimationFrame(analyzeAudio);
+  }, [isPlaying, audioContext, getYearIndex, position, years]);
+
+  // Start the audio analysis loop
+  const startAudioAnalysis = useCallback(() => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+    animationFrameRef.current = requestAnimationFrame(analyzeAudio);
+  }, [analyzeAudio]);
+  
   // Function to calculate volume based on distance from the thumb
   const calculateVolume = useCallback((yearPosition: number, thumbPosition: number) => {
     // Convert years to positions on the slider (0-100%)
@@ -232,22 +328,37 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
 
     console.log(`Updating volumes for position: ${thumbPosition}`);
 
-    audioSourcesRef.current.forEach((audioData) => {
+    const updatedSources = audioSourcesRef.current.map((audioData) => {
       if (audioData.gainNode && audioData.isPlaying) {
         const volume = calculateVolume(audioData.year, thumbPosition);
 
-        // Apply volume with immediate change for debugging
+        // Apply volume with immediate change
         audioData.gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
         console.log(`Updated volume for ${audioData.audioPath}: ${volume}`);
+
+        return {
+          ...audioData,
+          volume
+        };
       }
+      return audioData;
     });
-  }, [audioContext, isPlaying, audioSourcesRef, calculateVolume]);
+
+    audioSourcesRef.current = updatedSources;
+  }, [audioContext, isPlaying, calculateVolume]);
 
   // Update volumes whenever the position changes
   useEffect(() => {
     updateVolumes(position);
-
   }, [position, updateVolumes]);
+
+  // Debug effects to monitor values
+  useEffect(() => {
+    if (isPlaying) {
+      startAudioAnalysis();
+      console.log(`Current volume: ${currentVolume.toFixed(4)}`);
+    }
+  }, [currentVolume, isPlaying, startAudioAnalysis]);
 
   return (
     <div className="flex flex-col items-center w-full mx-auto p-4 max-w-6xl">
@@ -266,6 +377,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
               selectedYearIndex={currentIndex}
               healthLevels={healthLevels}
               isAnswerShown={isAnswerShown}
+              volume={currentVolume} // Pass the current volume to PlayButton
             />
           </button>
         )}
@@ -288,8 +400,6 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
 
         {/* Right content area */}
         <div className="col-span-11">
-
-
           {/* Slider track - aligned with grid */}
           <div className="relative w-full h-2 bg-gray-200 rounded-full mb-2">
             {/* Slider thumb */}
@@ -331,14 +441,15 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
         </button>
       </div>
 
-      {/* Debug info */}
+      {/* Debug info - uncomment for debugging */}
       {/* <div className="mt-6 text-xs text-gray-500 w-full">
-          <div>Current position: {position}%</div>
-          <div>Current year: {years[currentIndex]} ({currentIndex})</div>
-          <div>Audio file: {yearAudios[currentIndex]}</div>
-          <div>Audio state: {isPlaying ? "Playing" : "Paused"}</div>
-          <div>Audio context state: {audioContext?.state}</div>
-        </div> */}
+        <div>Current position: {position}%</div>
+        <div>Current year: {years[currentIndex]} ({currentIndex})</div>
+        <div>Audio file: {yearAudios[currentIndex]}</div>
+        <div>Audio state: {isPlaying ? "Playing" : "Paused"}</div>
+        <div>Audio context state: {audioContext?.state}</div>
+        <div>Current volume: {(currentVolume * 100).toFixed(2)}%</div>
+      </div> */}
     </div>
   );
 };

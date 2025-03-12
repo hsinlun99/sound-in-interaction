@@ -1,16 +1,57 @@
+import { useEffect } from "react";
+
 interface PlayButtonProps {
   isPlaying: boolean;
   selectedYearIndex: number;
   healthLevels: string[];
   isAnswerShown: boolean;
+  volume: number;
 }
 
-const PlayButton: React.FC<PlayButtonProps> = ({ isPlaying, selectedYearIndex, healthLevels, isAnswerShown }) => {
+const PlayButton: React.FC<PlayButtonProps> = ({ isPlaying, selectedYearIndex, healthLevels, isAnswerShown, volume }) => {
+
+  const baseScale = 1.0;
+  const maxScaleIncrease = 0.4;
+  const scaledVolume = Math.pow(volume, 0.4);
+  const scale = baseScale + (scaledVolume * maxScaleIncrease);
+
+  const transformStyle = {
+    transform: `scale(${scale})`,
+    transition: 'transform 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55)', // Elastic bounce effect
+    transformOrigin: 'center center',
+    animation: volume > 0.05 ? `heartbeat ${0.6 - (volume * 0.2)}s ease-out infinite` : 'none',
+  };
+
+  useEffect(() => {
+    // Create a dynamic style element for the keyframe animation
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = `
+      @keyframes heartbeat {
+        0% { transform: scale(${baseScale}); }
+        15% { transform: scale(${baseScale + (scaledVolume * maxScaleIncrease * 1.2)}); }
+        30% { transform: scale(${baseScale + (scaledVolume * maxScaleIncrease * 0.9)}); }
+        45% { transform: scale(${baseScale + (scaledVolume * maxScaleIncrease * 1.1)}); }
+        60% { transform: scale(${baseScale + (scaledVolume * maxScaleIncrease * 0.95)}); }
+        100% { transform: scale(${baseScale}); }
+      }
+    `;
+    document.head.appendChild(styleElement);
+
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, [volume, scaledVolume, baseScale, maxScaleIncrease]);
+
+  useEffect(() => {
+    if (volume > 0.01) {
+      console.log("Volume in button:", volume.toFixed(4), "Scale:", scale.toFixed(2));
+    }
+  }, [volume, scale]);
 
   if (isAnswerShown) {
     if (isPlaying) {
       return (
-        <svg className={`${healthLevels[selectedYearIndex] === 'level-1' ? 'fill-level-1' :
+        <svg style={transformStyle} className={`${healthLevels[selectedYearIndex] === 'level-1' ? 'fill-level-1' :
           healthLevels[selectedYearIndex] === 'level-2' ? 'fill-level-2' :
             healthLevels[selectedYearIndex] === 'level-3' ? 'fill-level-3' :
               healthLevels[selectedYearIndex] === 'level-4' ? 'fill-level-4' :
@@ -62,7 +103,7 @@ const PlayButton: React.FC<PlayButtonProps> = ({ isPlaying, selectedYearIndex, h
   } else {
     if (isPlaying) {
       return (
-        <svg width="298" height="245" viewBox="0 0 298 245" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg style={transformStyle} width="298" height="245" viewBox="0 0 298 245" fill="none" xmlns="http://www.w3.org/2000/svg">
           <g filter="url(#filter0_d_50_212)">
             <path d="M218.5 6C218.5 6 166.375 6 149 57.9231C131.625 6 79.5 6 79.5 6C41.275 6 10 37.1538 10 75.2308C10 146.192 149 231 149 231C149 231 288 144.462 288 75.2308C288 37.1538 256.725 6 218.5 6Z" fill="#757575" />
           </g>
