@@ -1,68 +1,74 @@
-import TimeLine from "@/components/TimeLine";
-import Image from "next/image";
 import React, { useState } from "react";
-import AnimalData from "../../public/data/animals-data.json"
+import StartButton from "@/components/StartButton";
+import InteractiveSlider from "@/components/InteractiveSlider";
+import AnimalData from "../../public/data/animals-data.json";
 
 export default function Home() {
-  // State to track which animal tab is active
-  const [activeAnimal, setActiveAnimal] = useState("eagle");
-
-  // Handler for button clicks
-  const handleAnimalClick = (animal: React.SetStateAction<string>) => {
-    setActiveAnimal(animal);
-  };
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const [isAudioReady, setIsAudioReady] = useState<boolean>(false);
 
   const eagle = AnimalData[0];
-  const goose = AnimalData[1];
-  const wolverine = AnimalData[2];
 
+
+  const handleStart = async () => {
+    if (!audioContext) {
+      try {
+        const context = new AudioContext();
+        setAudioContext(context);
+
+        // Ensure audio context is fully resumed before continuing
+        await context.resume().then(() => {
+          console.log("AudioContext is resumed and ready");
+        })
+
+        setIsAudioReady(true);
+      } catch (err) {
+        console.error("Error initializing audio context:", err);
+      }
+    }
+  };
   return (
-    <div className="grid min-h-screen">
+    <>
+      {!isAudioReady && (
+        <div className="absolute top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2">
+          <StartButton onClick={handleStart} />
+        </div>
+      )}
+      {isAudioReady && (
+        <>
+          <div className="justify-between flex w-screen min-w-full min-h-screen">
+            <div className="col-span-2 flex items-center">
+              <div className="grid grid-rows-3">
+                <div>
+                  <button>eagle</button>
+                </div>
+                <div>
+                  <button>eagle</button>
+                </div>
+                <div>
+                  <button>eagle</button>
+                </div>
+              </div>
+            </div>
 
-      {/* Left sidebar with tabs (1/12 width) */}
-      <div className="absolute top-10 left-10 flex flex-col items-center gap-2">
-        <button
-          className={`row-span-1 p-2 ${activeAnimal === "eagle" ? "bg-gray-200" : ""}`}
-          onClick={() => handleAnimalClick("eagle")}
-        >
-          <Image src="/image/animal-eagle.svg" alt="eagle's icon" width={100} height={100} priority />
-        </button>
-        <button
-          className={`row-span-1 p-2 ${activeAnimal === "goose" ? "bg-gray-200" : ""}`}
-          onClick={() => handleAnimalClick("goose")}
-        >
-          <Image src="/image/animal-goose.svg" alt="goose's icon" width={100} height={100} priority />
-        </button>
-        <button
-          className={`row-span-1 p-2 ${activeAnimal === "wolverine" ? "bg-gray-200" : ""}`}
-          onClick={() => handleAnimalClick("wolverine")}
-        >
-          <Image src="/image/animal-wolverine.svg" alt="wolverine's icon" width={100} height={100} priority />
-        </button>
-      </div>
+            <div className="col-span-8 grid grid-row-6 mx-auto items-center min-w-6/12">
+              <div className="row-span-2 flex items-center justify-center">
+                <button>play/pause</button>
+
+              </div>
+              <div className="w-full">
+                <InteractiveSlider years={eagle.years} audioContext={audioContext} />
+
+              </div>
+            </div>
 
 
-      <div className="grid row-span-full grid-rows-12">
-        {/* Content for animals - only show the active one */}
-        {activeAnimal === "eagle" && (
-          <div className="row-span-full">
-            <TimeLine years={eagle.years} yearAudios={eagle.yearAudios} healthLevels={eagle.healthLevels} population={eagle.population} yLabels={eagle.yLabels} facts={eagle.facts} animalId="eagle" />
+            <div className="col-span-2 flex items-center">
+              <button>eagle</button>
+            </div>
           </div>
-        )}
-
-        {activeAnimal === "goose" && (
-          <div className="row-span-full">
-            <TimeLine years={goose.years} yearAudios={goose.yearAudios} healthLevels={goose.healthLevels} population={goose.population} yLabels={goose.yLabels} facts={goose.facts} animalId="goose" />
-          </div>
-        )}
-
-        {activeAnimal === "wolverine" && (
-          <div className="row-span-full">
-            <TimeLine years={wolverine.years} yearAudios={wolverine.yearAudios} healthLevels={wolverine.healthLevels} population={wolverine.population} yLabels={wolverine.yLabels} facts={wolverine.facts} animalId="wolverine" />
-            {/* Additional wolverine content */}
-          </div>
-        )}
-      </div>
-    </div>
+        </>
+      )}
+    </>
   );
 }
