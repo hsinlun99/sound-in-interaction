@@ -62,6 +62,20 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
     }
   };
 
+  const handleYearClick = (index: number) => {
+    // 計算目標位置 - 確保精確匹配年份的位置
+    const exactPosition = (index / (years.length - 1)) * 100;
+    setPosition(exactPosition);
+
+    // 如果正在播放，要更新音量
+    if (isPlaying && audioContext) {
+      // 使用setTimeout確保React的狀態已更新
+      setTimeout(() => {
+        updateVolumes(exactPosition);
+      }, 10);
+    }
+  };
+
   // Load audio files
   useEffect(() => {
     if (!audioContext) return;
@@ -431,9 +445,20 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
         <div className="col-span-11">
           {/* Slider track - aligned with grid */}
           <div className="relative w-full h-2 bg-gray-200 rounded-full mb-2">
+            {/* Tick marks for each year */}
+            {years.map((_, index) => {
+              const tickPosition = (index / (years.length - 1)) * 100;
+              return (
+                <div
+                  key={index}
+                  className="absolute w-1 h-3 bg-gray-400 -mt-0.5 transform -translate-x-1/2"
+                  style={{ left: `${tickPosition}%` }}
+                ></div>
+              );
+            })}
             {/* Slider thumb */}
             <div
-              className="absolute w-6 h-6 bg-blue-500 rounded-full -ml-3 -mt-2 cursor-pointer shadow-md hover:bg-blue-600 transition-colors"
+              className="absolute w-6 h-6 bg-blue-500 rounded-full -ml-3 -mt-2 cursor-pointer shadow-md hover:bg-blue-600 transition-colors z-10"
               style={{ left: `${position}%` }}
             ></div>
           </div>
@@ -444,6 +469,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
               <div
                 key={year}
                 className={`text-sm ${index === currentIndex ? 'text-blue-500 font-bold' : 'text-gray-500'}`}
+                onClick={() => handleYearClick(index)}
               >
                 {year}
               </div>
