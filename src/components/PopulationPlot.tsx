@@ -22,17 +22,17 @@ const PopulationGraph: React.FC<PopulationGraphProps> = ({ population, yLabels, 
   };
 
   return (
-    <div className="w-full mb-4">
+    <div className="w-full mb-8">
       <div className="relative grid grid-cols-12 h-48">
         {/* Y-axis title and labels */}
         <div className="col-span-1 h-full flex flex-col">
           {/* Y-axis title */}
-          <div className="text-xs font-medium text-gray-700 mb-2">Population</div>
+          <div className="text-xs font-medium text-gray-700 absolute top-[-1.5rem]">Population</div>
 
           {/* Y-axis labels */}
           <div className="flex-1 flex flex-col justify-between">
             {yLabels.map((label, index) => (
-              <span key={index} className="text-xs text-gray-500">{label}</span>
+              <span key={index} className="text-xs text-gray-500 mr-3">{label}</span>
             ))}
           </div>
         </div>
