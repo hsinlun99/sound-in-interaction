@@ -249,75 +249,95 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
   }, [position, updateVolumes]);
 
   return (
-    <>
-      <div className="flex flex-col items-center w-full mx-auto p-4">
-        {/* Play/Pause Button */}
+    <div className="flex flex-col items-center w-full mx-auto p-4 max-w-6xl">
+      {/* Play/Pause Button */}
+      <div className="mb-4">
         {isLoading ? (
-          "Loading audios..."
+          <div className="text-gray-500">Loading audios...</div>
         ) : (
           <button
             onClick={togglePlayback}
             disabled={isLoading}
+            className="focus:outline-none"
           >
-            <PlayButton isPlaying={isPlaying} selectedYearIndex={currentIndex} healthLevels={healthLevels} isAnswerShown={true} />
+            <PlayButton
+              isPlaying={isPlaying}
+              selectedYearIndex={currentIndex}
+              healthLevels={healthLevels}
+              isAnswerShown={true}
+            />
           </button>
         )}
+      </div>
 
+      {/* Main content grid */}
+      <div className="grid grid-cols-12 w-full">
         {/* Population graph */}
-        <PopulationGraph population={population} healthLevels={healthLevels} yLabels={yLabels} />
-
-        {/* Slider track */}
-        <div className="relative w-full h-2 bg-gray-200 rounded-full mb-2">
-          {/* Slider thumb */}
-          <div
-            className="absolute w-6 h-6 bg-blue-500 rounded-full -ml-3 -mt-2 cursor-pointer shadow-md hover:bg-blue-600 transition-colors"
-            style={{ left: `${position}%` }}
-          ></div>
+        <div className="col-span-12">
+          <PopulationGraph
+            population={population}
+            healthLevels={healthLevels}
+            yLabels={yLabels}
+          />
         </div>
 
-        {/* Year labels */}
-        <div className="relative w-full flex justify-between">
-          {years.map((year, index) => {
-            // Calculate position percentage for each label
-            return (
+        {/* Left margin (for alignment with PopulationGraph) */}
+        <div className="col-span-1"></div>
+
+        {/* Right content area */}
+        <div className="col-span-11">
+
+
+          {/* Slider track - aligned with grid */}
+          <div className="relative w-full h-2 bg-gray-200 rounded-full mb-2">
+            {/* Slider thumb */}
+            <div
+              className="absolute w-6 h-6 bg-blue-500 rounded-full -ml-3 -mt-2 cursor-pointer shadow-md hover:bg-blue-600 transition-colors"
+              style={{ left: `${position}%` }}
+            ></div>
+          </div>
+
+          {/* Year labels */}
+          <div className="relative w-full flex justify-between mb-4">
+            {years.map((year, index) => (
               <div
                 key={year}
                 className={`text-sm ${index === currentIndex ? 'text-blue-500 font-bold' : 'text-gray-500'}`}
               >
                 {year}
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
+      </div>
 
-        {/* Control buttons */}
-        <div className="flex justify-between w-full mt-4">
-          <button
-            onClick={handleMoveLeft}
-            disabled={position <= 0}
-            className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
-          >
-            ← Move Left
-          </button>
-          <button
-            onClick={handleMoveRight}
-            disabled={position >= 100}
-            className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
-          >
-            Move Right →
-          </button>
-        </div>
+      {/* Control buttons */}
+      <div className="flex justify-between w-full mt-2">
+        <button
+          onClick={handleMoveLeft}
+          disabled={position <= 0}
+          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+        >
+          ← Move Left
+        </button>
+        <button
+          onClick={handleMoveRight}
+          disabled={position >= 100}
+          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+        >
+          Move Right →
+        </button>
+      </div>
 
-        {/* Debug info */}
-        {/* <div className="mt-6 text-xs text-gray-500 w-full">
+      {/* Debug info */}
+      {/* <div className="mt-6 text-xs text-gray-500 w-full">
           <div>Current position: {position}%</div>
           <div>Current year: {years[currentIndex]} ({currentIndex})</div>
           <div>Audio file: {yearAudios[currentIndex]}</div>
           <div>Audio state: {isPlaying ? "Playing" : "Paused"}</div>
           <div>Audio context state: {audioContext?.state}</div>
         </div> */}
-      </div>
-    </>
+    </div>
   );
 };
 
