@@ -6,7 +6,7 @@ interface ModeTogglerProps {
 const ModeToggler: React.FC<ModeTogglerProps> = ({ isAnswerShown, setIsAnswerShown }) => {
 
   return (
-    <div className="absolute top-4 right-4 flex items-center gap-2">
+    <div className="mt-4 mr-5 flex items-center gap-2">
       {/* off */}
       <span className="text-sm font-medium text-gray-400">OFF</span>
 

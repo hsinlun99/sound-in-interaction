@@ -416,7 +416,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
   return (
     <div className="flex flex-col items-center w-full mx-auto p-4 max-w-6xl">
       {/* Play/Pause Button */}
-      <div className="mb-30">
+      <div>
         {isLoading ? (
           <div className="text-gray-500">Loading audios...</div>
         ) : (

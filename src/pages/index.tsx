@@ -4,6 +4,7 @@ import InteractiveSlider from "@/components/InteractiveSlider";
 import AnimalData from "../../public/data/animals-data.json";
 import Image from "next/image";
 import ModeToggler from "@/components/ModeToggler";
+import AnimalFact from "@/components/AnimalFact";
 
 export default function Home() {
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
@@ -38,7 +39,7 @@ export default function Home() {
     }
   };
   return (
-    <>
+    <div className="justify-between w-screen min-w-screen min-h-screen grid grid-cols-11">
       {!isAudioReady && (
         <div className="absolute top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2">
           <StartButton onClick={handleStart} />
@@ -46,52 +47,65 @@ export default function Home() {
       )}
       {isAudioReady && (
         <>
-          <div className="justify-between flex w-screen min-w-full min-h-screen">
-            <div className="col-span-2 flex items-start">
-              <div className="grid grid-rows-3">
-                <button
-                  className={`row-span-1 p-2 rounded-full ${activeAnimal === "eagle" ? "bg-gray-200" : ""}`}
-                  onClick={() => handleAnimalClick("eagle")}
-                >
-                  <Image src="/image/animal-eagle.svg" alt="eagle's icon" width={100} height={100} priority />
-                </button>
-                <button
-                  className={`row-span-1 p-2 rounded-full ${activeAnimal === "goose" ? "bg-gray-200" : ""}`}
-                  onClick={() => handleAnimalClick("goose")}
-                >
-                  <Image src="/image/animal-goose.svg" alt="goose's icon" width={100} height={100} priority />
-                </button>
-                <button
-                  className={`row-span-1 p-2 rounded-full ${activeAnimal === "wolverine" ? "bg-gray-200" : ""}`}
-                  onClick={() => handleAnimalClick("wolverine")}
-                >
-                  <Image src="/image/animal-wolverine.svg" alt="wolverine's icon" width={100} height={100} priority />
-                </button>
-              </div>
-            </div>
-
-            <div className="col-span-6 flex mx-auto items-center min-w-8/12">
-              <div className="w-full">
-                {activeAnimal === "eagle" && (
-                  <InteractiveSlider years={eagle.years} audioContext={audioContext} yearAudios={eagle.yearAudios} healthLevels={eagle.healthLevels} population={eagle.population} yLabels={eagle.yLabels} isAnswerShown={isAnswerShown} />
-                )}
-                {activeAnimal === "goose" && (
-                  <InteractiveSlider years={goose.years} audioContext={audioContext} yearAudios={goose.yearAudios} healthLevels={goose.healthLevels} population={goose.population} yLabels={goose.yLabels} isAnswerShown={isAnswerShown} />
-                )}
-                {activeAnimal === "wolverine" && (
-                  <InteractiveSlider years={wolverine.years} audioContext={audioContext} yearAudios={wolverine.yearAudios} healthLevels={wolverine.healthLevels} population={wolverine.population} yLabels={wolverine.yLabels} isAnswerShown={isAnswerShown} />
-                )}
-                
-              </div>
-            </div>
-
-
-            <div className="col-span-2 flex items-center">
-              <ModeToggler isAnswerShown={isAnswerShown} setIsAnswerShown={setIsAnswerShown} />
+          <div className="col-span-2 flex items-start">
+            <div className="grid grid-rows-3 gap-1 ml-4 mt-4">
+              <button
+                className={`row-span-1 p-2 rounded-full ${activeAnimal === "eagle" ? "bg-blue-500" : ""}`}
+                onClick={() => handleAnimalClick("eagle")}
+              >
+                <Image src="/image/animal-eagle.svg" alt="eagle's icon" width={100} height={100} priority />
+              </button>
+              <button
+                className={`row-span-1 p-2 rounded-full ${activeAnimal === "goose" ? "bg-blue-500" : ""}`}
+                onClick={() => handleAnimalClick("goose")}
+              >
+                <Image src="/image/animal-goose.svg" alt="goose's icon" width={100} height={100} priority />
+              </button>
+              <button
+                className={`row-span-1 p-2 rounded-full ${activeAnimal === "wolverine" ? "bg-blue-500" : ""}`}
+                onClick={() => handleAnimalClick("wolverine")}
+              >
+                <Image src="/image/animal-wolverine.svg" alt="wolverine's icon" width={100} height={100} priority />
+              </button>
             </div>
           </div>
+
+          <div className="col-span-6 flex mx-auto items-center">
+            <div className="w-full grid">
+              {activeAnimal === "eagle" && (
+                <>
+                  <div className="row-span-3">
+                    <AnimalFact animalId={eagle.id} facts={eagle.facts} />
+                  </div>
+                  <div className="row-span-8">
+                    <InteractiveSlider years={eagle.years} audioContext={audioContext} yearAudios={eagle.yearAudios} healthLevels={eagle.healthLevels} population={eagle.population} yLabels={eagle.yLabels} isAnswerShown={isAnswerShown} />
+
+                  </div>
+                </>
+              )}
+              {activeAnimal === "goose" && (
+                <>
+                  <AnimalFact animalId={goose.id} facts={goose.facts} />
+                  <InteractiveSlider years={goose.years} audioContext={audioContext} yearAudios={goose.yearAudios} healthLevels={goose.healthLevels} population={goose.population} yLabels={goose.yLabels} isAnswerShown={isAnswerShown} />
+                </>
+              )}
+              {activeAnimal === "wolverine" && (
+                <>
+                  <AnimalFact animalId={wolverine.id} facts={wolverine.facts} />
+                  <InteractiveSlider years={wolverine.years} audioContext={audioContext} yearAudios={wolverine.yearAudios} healthLevels={wolverine.healthLevels} population={wolverine.population} yLabels={wolverine.yLabels} isAnswerShown={isAnswerShown} />
+                </>
+              )}
+
+            </div>
+          </div>
+
+
+          <div className="col-span-3 flex items-start justify-end">
+            <ModeToggler isAnswerShown={isAnswerShown} setIsAnswerShown={setIsAnswerShown} />
+          </div>
+
         </>
       )}
-    </>
+    </div>
   );
 }
