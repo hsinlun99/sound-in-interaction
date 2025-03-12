@@ -17,24 +17,24 @@ const PlayButton: React.FC<PlayButtonProps> = ({ isPlaying, selectedYearIndex, h
 
   const transformStyle = {
     transform: `scale(${scale})`,
-    transition: 'transform 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55)', // Elastic bounce effect
+    transition: 'transform 0.1s ease-out', // Elastic bounce effect
     transformOrigin: 'center center',
-    animation: volume > 0.05 ? `heartbeat ${0.6 - (volume * 0.2)}s ease-out infinite` : 'none',
+    animation: volume > 0.03 ? `heartbeat ${0.4 - (volume * 0.15)}s ease-out infinite` : 'none',
   };
 
   useEffect(() => {
     // Create a dynamic style element for the keyframe animation
     const styleElement = document.createElement('style');
     styleElement.innerHTML = `
-      @keyframes heartbeat {
-        0% { transform: scale(${baseScale}); }
-        15% { transform: scale(${baseScale + (scaledVolume * maxScaleIncrease * 1.2)}); }
-        30% { transform: scale(${baseScale + (scaledVolume * maxScaleIncrease * 0.9)}); }
-        45% { transform: scale(${baseScale + (scaledVolume * maxScaleIncrease * 1.1)}); }
-        60% { transform: scale(${baseScale + (scaledVolume * maxScaleIncrease * 0.95)}); }
-        100% { transform: scale(${baseScale}); }
-      }
-    `;
+    @keyframes heartbeat {
+      0% { transform: scale(${baseScale}); }
+      10% { transform: scale(${baseScale + (scaledVolume * maxScaleIncrease * 1.3)}); } // Faster rise
+      25% { transform: scale(${baseScale + (scaledVolume * maxScaleIncrease * 0.9)}); } // Faster fall
+      40% { transform: scale(${baseScale + (scaledVolume * maxScaleIncrease * 1.1)}); } // Second beat
+      55% { transform: scale(${baseScale + (scaledVolume * maxScaleIncrease * 0.95)}); }
+      100% { transform: scale(${baseScale}); }
+    }
+  `;
     document.head.appendChild(styleElement);
 
     return () => {

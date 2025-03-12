@@ -115,8 +115,8 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
 
             // Create analyser node
             const analyser = audioContext.createAnalyser();
-            analyser.fftSize = 256;
-            analyser.smoothingTimeConstant = 0.5;
+            analyser.fftSize = 128;
+            analyser.smoothingTimeConstant = 0.3;
             gainNode.connect(analyser);
 
             sources.push({
@@ -272,7 +272,6 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
   const analyzeAudio = useCallback(() => {
     if (!isPlaying || !audioContext) return;
 
-    // Get the current index to find the closest audio source
     const currentYearIndex = getYearIndex(position);
     const currentYearValue = years[currentYearIndex];
 
@@ -280,38 +279,46 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
     let dataAvailable = false;
 
     audioSourcesRef.current.forEach((audioData) => {
+      // Only analyze heartbeat audio
       if (!audioData.analyser || !audioData.isPlaying || !audioData.isHeartbeat) return;
 
-      // get frequency data
+      // Focus on lower frequencies where heartbeat sounds are most prominent
       const dataArray = new Uint8Array(audioData.analyser.frequencyBinCount);
       audioData.analyser.getByteFrequencyData(dataArray);
 
-      // Calculate average volume
-      let sum = 0;
-      for (let i = 0; i < dataArray.length; i++) {
-        sum += dataArray[i];
-      }
-      const avgVolume = sum / dataArray.length / 255; // Normalize
+      // Improved detection focusing on specific frequency ranges
+      // Consider only lower frequencies (typically heartbeat is in lower range)
+      const lowerBandEnd = Math.floor(dataArray.length * 0.3); // Analyze up to 30% of frequency bands
 
-      // Update maxVolume if the current year matches
+      let sum = 0;
+      let peakIntensity = 0;
+      for (let i = 0; i < lowerBandEnd; i++) {
+        sum += dataArray[i];
+        // Track peak intensity for better pulse detection
+        peakIntensity = Math.max(peakIntensity, dataArray[i]);
+      }
+
+      const avgVolume = sum / lowerBandEnd / 255; // Standard normalization
+      // Weight peak detection more heavily for distinct beats
+      const weightedVolume = (avgVolume * 0.5) + (peakIntensity / 255 * 0.5);
+
       if (audioData.year === currentYearValue) {
-        maxVolume = Math.max(maxVolume, avgVolume);
+        maxVolume = Math.max(maxVolume, weightedVolume);
         dataAvailable = true;
       }
     });
 
-    // Update volume
+    // Apply volume with more responsive transition
     if (dataAvailable) {
-      // amplify volume
-      const enhancedVolume = Math.pow(maxVolume, 0.5);
+      // Square root enhances sensitivity to smaller changes
+      const enhancedVolume = Math.pow(maxVolume, 0.3); // More aggressive enhancement (was 0.5)
 
-      // Update volume
+      // Less smoothing for more responsive transition
       setCurrentVolume(prevVolume => {
-        return prevVolume * 0.7 + enhancedVolume * 0.3; // 增加新值的权重
+        return prevVolume * 0.4 + enhancedVolume * 0.6; // Increase new value weight for quicker response
       });
     }
 
-    // Request next frame
     animationFrameRef.current = requestAnimationFrame(analyzeAudio);
   }, [isPlaying, audioContext, getYearIndex, position, years]);
 
