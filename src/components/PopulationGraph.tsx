@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 interface PopulationGraphProps {
   population: number[];
@@ -21,10 +21,6 @@ const PopulationGraph: React.FC<PopulationGraphProps> = ({ population, yLabels, 
     // Normalize the population value between min and max
     return ((popValue - minPopulation) / (maxPopulation - minPopulation)) * 100;
   };
-
-  useEffect(() => {
-    console.log(isAnswerShown, "graph")
-  }, [isAnswerShown]);
 
   return (
     <div className="w-full mb-8">

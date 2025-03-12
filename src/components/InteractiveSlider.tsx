@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import PlayButton from "./PlayButton";
-import PopulationGraph from "./PopulationPlot";
+import PopulationGraph from "./PopulationGraph";
 
 interface InteractiveSliderProps {
   audioContext: AudioContext | null;
@@ -9,6 +9,7 @@ interface InteractiveSliderProps {
   healthLevels: string[];
   population: number[];
   yLabels: number[];
+  isAnswerShown: boolean;
 }
 
 interface AudioSource {
@@ -20,7 +21,7 @@ interface AudioSource {
   audioPath: string;
 }
 
-const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioContext, yearAudios, healthLevels, population, yLabels }) => {
+const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioContext, yearAudios, healthLevels, population, yLabels, isAnswerShown }) => {
   const [position, setPosition] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioSources, setAudioSources] = useState<AudioSource[]>([]);
@@ -251,7 +252,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
   return (
     <div className="flex flex-col items-center w-full mx-auto p-4 max-w-6xl">
       {/* Play/Pause Button */}
-      <div className="mb-4">
+      <div className="mb-30">
         {isLoading ? (
           <div className="text-gray-500">Loading audios...</div>
         ) : (
@@ -264,7 +265,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
               isPlaying={isPlaying}
               selectedYearIndex={currentIndex}
               healthLevels={healthLevels}
-              isAnswerShown={true}
+              isAnswerShown={isAnswerShown}
             />
           </button>
         )}
@@ -278,6 +279,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
             population={population}
             healthLevels={healthLevels}
             yLabels={yLabels}
+            isAnswerShown={isAnswerShown}
           />
         </div>
 

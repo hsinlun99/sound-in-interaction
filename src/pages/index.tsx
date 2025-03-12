@@ -3,11 +3,14 @@ import StartButton from "@/components/StartButton";
 import InteractiveSlider from "@/components/InteractiveSlider";
 import AnimalData from "../../public/data/animals-data.json";
 import Image from "next/image";
+import ModeToggler from "@/components/ModeToggler";
 
 export default function Home() {
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [isAudioReady, setIsAudioReady] = useState<boolean>(false);
   const [activeAnimal, setActiveAnimal] = useState("eagle");
+
+  const [isAnswerShown, setIsAnswerShown] = useState(false);
 
   const handleAnimalClick = (animal: React.SetStateAction<string>) => {
     setActiveAnimal(animal);
@@ -70,13 +73,13 @@ export default function Home() {
             <div className="col-span-6 flex mx-auto items-center min-w-8/12">
               <div className="w-full">
                 {activeAnimal === "eagle" && (
-                  <InteractiveSlider years={eagle.years} audioContext={audioContext} yearAudios={eagle.yearAudios} healthLevels={eagle.healthLevels} population={eagle.population} yLabels={eagle.yLabels} />
+                  <InteractiveSlider years={eagle.years} audioContext={audioContext} yearAudios={eagle.yearAudios} healthLevels={eagle.healthLevels} population={eagle.population} yLabels={eagle.yLabels} isAnswerShown={isAnswerShown} />
                 )}
                 {activeAnimal === "goose" && (
-                  <InteractiveSlider years={goose.years} audioContext={audioContext} yearAudios={goose.yearAudios} healthLevels={goose.healthLevels} population={goose.population} yLabels={goose.yLabels} />
+                  <InteractiveSlider years={goose.years} audioContext={audioContext} yearAudios={goose.yearAudios} healthLevels={goose.healthLevels} population={goose.population} yLabels={goose.yLabels} isAnswerShown={isAnswerShown} />
                 )}
                 {activeAnimal === "wolverine" && (
-                  <InteractiveSlider years={wolverine.years} audioContext={audioContext} yearAudios={wolverine.yearAudios} healthLevels={wolverine.healthLevels} population={wolverine.population} yLabels={wolverine.yLabels} />
+                  <InteractiveSlider years={wolverine.years} audioContext={audioContext} yearAudios={wolverine.yearAudios} healthLevels={wolverine.healthLevels} population={wolverine.population} yLabels={wolverine.yLabels} isAnswerShown={isAnswerShown} />
                 )}
                 
               </div>
@@ -84,7 +87,7 @@ export default function Home() {
 
 
             <div className="col-span-2 flex items-center">
-              <button>eagle</button>
+              <ModeToggler isAnswerShown={isAnswerShown} setIsAnswerShown={setIsAnswerShown} />
             </div>
           </div>
         </>
