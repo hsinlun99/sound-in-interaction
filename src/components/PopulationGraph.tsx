@@ -46,7 +46,7 @@ const PopulationGraph: React.FC<PopulationGraphProps> = ({ population, yLabels, 
           {/* Grid lines */}
           <div className="flex flex-col justify-between h-full w-full -mt-6">
             {yLabels.map((_, index) => (
-              <div key={index} className="h-1 w-full bg-gray-200 rounded-full"></div>
+              <div key={index} className="h-1 w-full bg-gray-100 rounded-full"></div>
             ))}
           </div>
 
