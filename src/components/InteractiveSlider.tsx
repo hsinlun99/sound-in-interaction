@@ -5,7 +5,7 @@ import PopulationGraph from "./PopulationGraph";
 interface InteractiveSliderProps {
   audioContext: AudioContext | null;
   years: number[];
-  yearAudios: string[]; // Array of audio file paths matching the years array
+  yearAudios: string[][]; // Array of audio file paths matching the years array
   healthLevels: string[];
   population: number[];
   yLabels: number[];
@@ -19,6 +19,7 @@ interface AudioSource {
   isPlaying: boolean;
   year: number;
   audioPath: string;
+  isHeartbeat?: boolean;
   analyser?: AnalyserNode; // Add analyser node for volume detection
   volume?: number; // Store current volume
 }
@@ -93,49 +94,57 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
 
       for (let i = 0; i < years.length; i++) {
         const year = years[i];
-        const audioPath = yearAudios[i];
+        const audioPaths = yearAudios[i]; // Now an array of paths
 
-        try {
-          console.log(`Loading audio: ${audioPath}`);
-          // Fetch audio file based on the path from yearAudios
-          const response = await fetch(audioPath);
-          const arrayBuffer = await response.arrayBuffer();
-          const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        // Process each audio file for this year
+        for (let j = 0; j < audioPaths.length; j++) {
+          const audioPath = audioPaths[j];
+          const isHeartbeat = audioPath.includes("heartbeat");
 
-          // Create gain node
-          const gainNode = audioContext.createGain();
-          gainNode.connect(audioContext.destination);
-          gainNode.gain.value = 0; // Start with volume at 0
+          try {
+            console.log(`Loading audio: ${audioPath}`);
+            // Fetch audio file based on the path
+            const response = await fetch(audioPath);
+            const arrayBuffer = await response.arrayBuffer();
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
-          // Create analyser node
-          const analyser = audioContext.createAnalyser();
-          analyser.fftSize = 256; // Smaller FFT size for better performance
-          analyser.smoothingTimeConstant = 0.5;
-          gainNode.connect(analyser);
+            // Create gain node
+            const gainNode = audioContext.createGain();
+            gainNode.connect(audioContext.destination);
+            gainNode.gain.value = 0; // Start with volume at 0
 
-          sources.push({
-            buffer: audioBuffer,
-            source: null,
-            gainNode,
-            analyser,
-            isPlaying: false,
-            year,
-            audioPath,
-            volume: 0
-          });
-          console.log(`Successfully loaded audio: ${audioPath}`);
-        } catch (error) {
-          console.error(`Error loading audio for year ${year} (${audioPath}):`, error);
-          // Add empty placeholder for failed loads to maintain index alignment
-          sources.push({
-            buffer: null,
-            source: null,
-            gainNode: null,
-            isPlaying: false,
-            year,
-            audioPath,
-            volume: 0
-          });
+            // Create analyser node
+            const analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            analyser.smoothingTimeConstant = 0.5;
+            gainNode.connect(analyser);
+
+            sources.push({
+              buffer: audioBuffer,
+              source: null,
+              gainNode,
+              analyser,
+              isPlaying: false,
+              year,
+              audioPath,
+              isHeartbeat, // Flag to identify heartbeat audio
+              volume: 0
+            });
+            console.log(`Successfully loaded audio: ${audioPath}`);
+          } catch (error) {
+            console.error(`Error loading audio for year ${year} (${audioPath}):`, error);
+            // Add empty placeholder for failed loads to maintain index alignment
+            sources.push({
+              buffer: null,
+              source: null,
+              gainNode: null,
+              isPlaying: false,
+              year,
+              audioPath,
+              isHeartbeat,
+              volume: 0
+            });
+          }
         }
       }
 
@@ -204,14 +213,14 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
         // Set initial volume based on position
         const volume = calculateVolume(audioData.year, position);
         audioData.gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
-        console.log(`Set initial volume for ${audioData.audioPath}: ${volume}`);
+        // console.log(`Set initial volume for ${audioData.audioPath}: ${volume}`);
       }
 
       // Start playback
       source.start(0);
       source.loop = true;
 
-      console.log(`Started playback for ${audioData.audioPath}`);
+      // console.log(`Started playback for ${audioData.audioPath}`);
 
       return {
         ...audioData,
@@ -240,7 +249,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
       if (audioData.source && audioData.isPlaying) {
         try {
           audioData.source.stop(0);
-          console.log(`Stopped playback for ${audioData.audioPath}`);
+          // console.log(`Stopped playback for ${audioData.audioPath}`);
         } catch (error) {
           console.error(`Error stopping audio source: ${error}`);
         }
@@ -267,43 +276,42 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
     const currentYearIndex = getYearIndex(position);
     const currentYearValue = years[currentYearIndex];
 
-    // 找出当前播放的音频源并计算其实际音量
     let maxVolume = 0;
     let dataAvailable = false;
 
     audioSourcesRef.current.forEach((audioData) => {
-      if (!audioData.analyser || !audioData.isPlaying) return;
+      if (!audioData.analyser || !audioData.isPlaying || !audioData.isHeartbeat) return;
 
-      // 获取频率数据
+      // get frequency data
       const dataArray = new Uint8Array(audioData.analyser.frequencyBinCount);
       audioData.analyser.getByteFrequencyData(dataArray);
 
-      // 计算平均音量
+      // Calculate average volume
       let sum = 0;
       for (let i = 0; i < dataArray.length; i++) {
         sum += dataArray[i];
       }
-      const avgVolume = sum / dataArray.length / 255; // 标准化到 0-1
+      const avgVolume = sum / dataArray.length / 255; // Normalize
 
-      // 如果这是当前年份的音频，考虑其音量作为UI显示
+      // Update maxVolume if the current year matches
       if (audioData.year === currentYearValue) {
         maxVolume = Math.max(maxVolume, avgVolume);
         dataAvailable = true;
       }
     });
 
-    // 只有在有数据时才更新音量
+    // Update volume
     if (dataAvailable) {
-      // 增强音量效果
+      // amplify volume
       const enhancedVolume = Math.pow(maxVolume, 0.5);
 
-      // 平滑过渡
+      // Update volume
       setCurrentVolume(prevVolume => {
         return prevVolume * 0.7 + enhancedVolume * 0.3; // 增加新值的权重
       });
     }
 
-    // 继续分析循环
+    // Request next frame
     animationFrameRef.current = requestAnimationFrame(analyzeAudio);
   }, [isPlaying, audioContext, getYearIndex, position, years]);
 
@@ -358,7 +366,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
   const updateVolumes = useCallback((thumbPosition: number) => {
     if (!audioContext || !isPlaying) return;
 
-    console.log(`Updating volumes for position: ${thumbPosition}`);
+    // console.log(`Updating volumes for position: ${thumbPosition}`);
 
     // 檢查滑塊是否正好在某個年份位置上
     const exactYearMatch = years.findIndex(year => {
@@ -383,7 +391,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
 
         // 立即應用音量變化
         audioData.gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
-        console.log(`Updated volume for ${audioData.audioPath}: ${volume}`);
+        // console.log(`Updated volume for ${audioData.audioPath}: ${volume}`);
 
         return {
           ...audioData,

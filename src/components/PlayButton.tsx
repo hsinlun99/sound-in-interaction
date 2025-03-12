@@ -43,11 +43,11 @@ const PlayButton: React.FC<PlayButtonProps> = ({ isPlaying, selectedYearIndex, h
   }, [volume, scaledVolume, baseScale, maxScaleIncrease]);
 
   // for debugging
-  // useEffect(() => {
-  //   if (volume > 0.01) {
-  //     console.log("Volume in button:", volume.toFixed(4), "Scale:", scale.toFixed(2));
-  //   }
-  // }, [volume, scale]);
+  useEffect(() => {
+    if (volume > 0.01) {
+      console.log("Volume in button:", volume.toFixed(4), "Scale:", scale.toFixed(2));
+    }
+  }, [volume, scale]);
 
   if (isAnswerShown) {
     if (isPlaying) {
