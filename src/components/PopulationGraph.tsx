@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 interface PopulationGraphProps {
   population: number[];
   yLabels: number[];
   healthLevels: string[];
+  isAnswerShown: boolean;
 }
 
-const PopulationGraph: React.FC<PopulationGraphProps> = ({ population, yLabels, healthLevels }) => {
+const PopulationGraph: React.FC<PopulationGraphProps> = ({ population, yLabels, healthLevels, isAnswerShown }) => {
 
   const maxPopulation = Math.max(...population);
   const minPopulation = Math.min(...population);
@@ -20,6 +21,10 @@ const PopulationGraph: React.FC<PopulationGraphProps> = ({ population, yLabels, 
     // Normalize the population value between min and max
     return ((popValue - minPopulation) / (maxPopulation - minPopulation)) * 100;
   };
+
+  useEffect(() => {
+    console.log(isAnswerShown, "graph")
+  }, [isAnswerShown]);
 
   return (
     <div className="w-full mb-8">
@@ -50,7 +55,7 @@ const PopulationGraph: React.FC<PopulationGraphProps> = ({ population, yLabels, 
           </div>
 
           {/* Population points with animated vertical positioning */}
-          {population.map((pop, idx) => {
+          {isAnswerShown && population.map((pop, idx) => {
             // Calculate horizontal position by dividing the width evenly
             const horizontalSpacing = 100 / (population.length - 1 || 1);
             const xPosition = idx * horizontalSpacing;
@@ -87,3 +92,4 @@ const PopulationGraph: React.FC<PopulationGraphProps> = ({ population, yLabels, 
 };
 
 export default PopulationGraph;
+
