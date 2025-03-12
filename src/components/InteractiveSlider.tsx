@@ -294,30 +294,42 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
     }
     animationFrameRef.current = requestAnimationFrame(analyzeAudio);
   }, [analyzeAudio]);
-  
+
   // Function to calculate volume based on distance from the thumb
   const calculateVolume = useCallback((yearPosition: number, thumbPosition: number) => {
-    // Convert years to positions on the slider (0-100%)
+    // 計算所有音頻源到當前位置的距離
+    const distances = years.map(year => {
+      const yearIndex = years.indexOf(year);
+      const yearPositionPercent = (yearIndex / (years.length - 1)) * 100;
+      return {
+        year,
+        distance: Math.abs(yearPositionPercent - thumbPosition)
+      };
+    });
+
+    // 按距離排序
+    distances.sort((a, b) => a.distance - b.distance);
+
+    // 如果當前年份不是最接近的兩個之一，音量為0
+    const isInTopTwo = distances.slice(0, 2).some(item => item.year === yearPosition);
+    if (!isInTopTwo) return 0;
+
+    // 轉換年份到滑塊上的位置(0-100%)
     const yearIndex = years.indexOf(yearPosition);
     const yearPositionPercent = (yearIndex / (years.length - 1)) * 100;
 
-    // Calculate distance (0-100 scale)
+    // 計算距離(0-100刻度)
     const distance = Math.abs(yearPositionPercent - thumbPosition);
 
-    // Maximum distance at which audio can be heard
-    const maxAudibleDistance = 25; // 25% of slider width
+    // 可聽見音頻的最大距離
+    const maxAudibleDistance = 25; // 滑塊寬度的25%
 
     if (distance > maxAudibleDistance) {
-      return 0; // No volume if too far
+      return 0; // 如果太遠則沒有音量
     }
 
-    // Linear falloff: 1 at the position, 0 at maxAudibleDistance
+    // 線性衰減：在位置上為1，在maxAudibleDistance處為0
     const volume = 1 - (distance / maxAudibleDistance);
-
-    // Debug
-    if (thumbPosition === yearPositionPercent) {
-      console.log(`At exact position for year ${yearPosition}: volume = ${volume}`);
-    }
 
     return volume;
   }, [years]);
@@ -328,11 +340,28 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
 
     console.log(`Updating volumes for position: ${thumbPosition}`);
 
+    // 檢查滑塊是否正好在某個年份位置上
+    const exactYearMatch = years.findIndex(year => {
+      const yearIndex = years.indexOf(year);
+      const yearPositionPercent = (yearIndex / (years.length - 1)) * 100;
+      // 使用一個小的容差值來判斷是否在確切位置（例如1%以內）
+      return Math.abs(yearPositionPercent - thumbPosition) < 1;
+    });
+
     const updatedSources = audioSourcesRef.current.map((audioData) => {
       if (audioData.gainNode && audioData.isPlaying) {
-        const volume = calculateVolume(audioData.year, thumbPosition);
+        let volume = 0;
 
-        // Apply volume with immediate change
+        // 如果滑塊精確位於某個年份位置，僅播放該年份的聲音
+        if (exactYearMatch !== -1) {
+          const exactYear = years[exactYearMatch];
+          volume = audioData.year === exactYear ? 1 : 0;
+        } else {
+          // 否則使用正常的音量計算
+          volume = calculateVolume(audioData.year, thumbPosition);
+        }
+
+        // 立即應用音量變化
         audioData.gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
         console.log(`Updated volume for ${audioData.audioPath}: ${volume}`);
 
@@ -345,7 +374,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
     });
 
     audioSourcesRef.current = updatedSources;
-  }, [audioContext, isPlaying, calculateVolume]);
+  }, [audioContext, isPlaying, calculateVolume, years]);
 
   // Update volumes whenever the position changes
   useEffect(() => {
@@ -356,7 +385,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
   useEffect(() => {
     if (isPlaying) {
       startAudioAnalysis();
-      console.log(`Current volume: ${currentVolume.toFixed(4)}`);
+      // console.log(`Current volume: ${currentVolume.toFixed(4)}`);
     }
   }, [currentVolume, isPlaying, startAudioAnalysis]);
 
