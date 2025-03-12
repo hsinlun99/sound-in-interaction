@@ -271,56 +271,45 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
   // Function to analyze audio data and update volume levels
   const analyzeAudio = useCallback(() => {
     if (!isPlaying || !audioContext) return;
-
-    const currentYearIndex = getYearIndex(position);
-    const currentYearValue = years[currentYearIndex];
-
+  
     let maxVolume = 0;
     let dataAvailable = false;
-
+  
+    // Iterate over all audio sources
     audioSourcesRef.current.forEach((audioData) => {
-      // Only analyze heartbeat audio
+      // filter out non-heartbeat audio
       if (!audioData.analyser || !audioData.isPlaying || !audioData.isHeartbeat) return;
-
-      // Focus on lower frequencies where heartbeat sounds are most prominent
+  
       const dataArray = new Uint8Array(audioData.analyser.frequencyBinCount);
       audioData.analyser.getByteFrequencyData(dataArray);
-
-      // Improved detection focusing on specific frequency ranges
-      // Consider only lower frequencies (typically heartbeat is in lower range)
-      const lowerBandEnd = Math.floor(dataArray.length * 0.3); // Analyze up to 30% of frequency bands
-
+  
+      const lowerBandEnd = Math.floor(dataArray.length * 0.3);
+  
       let sum = 0;
       let peakIntensity = 0;
       for (let i = 0; i < lowerBandEnd; i++) {
         sum += dataArray[i];
-        // Track peak intensity for better pulse detection
         peakIntensity = Math.max(peakIntensity, dataArray[i]);
       }
-
-      const avgVolume = sum / lowerBandEnd / 255; // Standard normalization
-      // Weight peak detection more heavily for distinct beats
+  
+      const avgVolume = sum / lowerBandEnd / 255;
       const weightedVolume = (avgVolume * 0.5) + (peakIntensity / 255 * 0.5);
-
-      if (audioData.year === currentYearValue) {
-        maxVolume = Math.max(maxVolume, weightedVolume);
-        dataAvailable = true;
-      }
+  
+      // get the loudest heatbeat
+      maxVolume = Math.max(maxVolume, weightedVolume);
+      dataAvailable = true;
     });
-
-    // Apply volume with more responsive transition
+  
+    // Update volume
     if (dataAvailable) {
-      // Square root enhances sensitivity to smaller changes
-      const enhancedVolume = Math.pow(maxVolume, 0.3); // More aggressive enhancement (was 0.5)
-
-      // Less smoothing for more responsive transition
+      const enhancedVolume = Math.pow(maxVolume, 0.3);
       setCurrentVolume(prevVolume => {
-        return prevVolume * 0.4 + enhancedVolume * 0.6; // Increase new value weight for quicker response
+        return prevVolume * 0.4 + enhancedVolume * 0.6;
       });
     }
-
+  
     animationFrameRef.current = requestAnimationFrame(analyzeAudio);
-  }, [isPlaying, audioContext, getYearIndex, position, years]);
+  }, [isPlaying, audioContext]);
 
   // Start the audio analysis loop
   const startAudioAnalysis = useCallback(() => {
