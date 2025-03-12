@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
+import PlayButton from "./PlayButton";
 
 interface InteractiveSliderProps {
   audioContext: AudioContext | null;
   years: number[];
   yearAudios: string[]; // Array of audio file paths matching the years array
+  healthLevels: string[];
 }
 
 interface AudioSource {
@@ -15,7 +17,7 @@ interface AudioSource {
   audioPath: string;
 }
 
-const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioContext, yearAudios }) => {
+const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioContext, yearAudios, healthLevels }) => {
   const [position, setPosition] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [, setAudioSources] = useState<AudioSource[]>([]);
@@ -253,14 +255,16 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
     <>
       <div className="flex flex-col items-center w-full mx-auto p-4">
         {/* Play/Pause Button */}
-        <button
-          onClick={togglePlayback}
-          disabled={isLoading}
-          className={`px-4 py-2 mb-4 text-white rounded ${isLoading ? 'bg-gray-400' : isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'
-            }`}
-        >
-          {isLoading ? "Loading audio..." : isPlaying ? "Pause" : "Play"}
-        </button>
+        {isLoading ? (
+          "Loading audios..."
+        ) : (
+          <button
+            onClick={togglePlayback}
+            disabled={isLoading}
+          >
+            <PlayButton isPlaying={isPlaying} selectedYearIndex={currentIndex} healthLevels={healthLevels} isAnswerShown={true} />
+          </button>
+        )}
 
         {/* Slider track */}
         <div className="relative w-full h-2 bg-gray-200 rounded-full mb-2">
@@ -305,13 +309,13 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
         </div>
 
         {/* Debug info */}
-        <div className="mt-6 text-xs text-gray-500 w-full">
+        {/* <div className="mt-6 text-xs text-gray-500 w-full">
           <div>Current position: {position}%</div>
           <div>Current year: {years[currentIndex]} ({currentIndex})</div>
           <div>Audio file: {yearAudios[currentIndex]}</div>
           <div>Audio state: {isPlaying ? "Playing" : "Paused"}</div>
           <div>Audio context state: {audioContext?.state}</div>
-        </div>
+        </div> */}
       </div>
     </>
   );
