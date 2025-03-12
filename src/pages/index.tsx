@@ -2,13 +2,20 @@ import React, { useState } from "react";
 import StartButton from "@/components/StartButton";
 import InteractiveSlider from "@/components/InteractiveSlider";
 import AnimalData from "../../public/data/animals-data.json";
+import Image from "next/image";
 
 export default function Home() {
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [isAudioReady, setIsAudioReady] = useState<boolean>(false);
+  const [activeAnimal, setActiveAnimal] = useState("eagle");
+
+  const handleAnimalClick = (animal: React.SetStateAction<string>) => {
+    setActiveAnimal(animal);
+  };
 
   const eagle = AnimalData[0];
-
+  const goose = AnimalData[1];
+  const wolverine = AnimalData[2];
 
   const handleStart = async () => {
     if (!audioContext) {
@@ -37,27 +44,41 @@ export default function Home() {
       {isAudioReady && (
         <>
           <div className="justify-between flex w-screen min-w-full min-h-screen">
-            <div className="col-span-2 flex items-center">
+            <div className="col-span-2 flex items-start">
               <div className="grid grid-rows-3">
-                <div>
-                  <button>eagle</button>
-                </div>
-                <div>
-                  <button>eagle</button>
-                </div>
-                <div>
-                  <button>eagle</button>
-                </div>
+                <button
+                  className={`row-span-1 p-2 rounded-full ${activeAnimal === "eagle" ? "bg-gray-200" : ""}`}
+                  onClick={() => handleAnimalClick("eagle")}
+                >
+                  <Image src="/image/animal-eagle.svg" alt="eagle's icon" width={100} height={100} priority />
+                </button>
+                <button
+                  className={`row-span-1 p-2 rounded-full ${activeAnimal === "goose" ? "bg-gray-200" : ""}`}
+                  onClick={() => handleAnimalClick("goose")}
+                >
+                  <Image src="/image/animal-goose.svg" alt="goose's icon" width={100} height={100} priority />
+                </button>
+                <button
+                  className={`row-span-1 p-2 rounded-full ${activeAnimal === "wolverine" ? "bg-gray-200" : ""}`}
+                  onClick={() => handleAnimalClick("wolverine")}
+                >
+                  <Image src="/image/animal-wolverine.svg" alt="wolverine's icon" width={100} height={100} priority />
+                </button>
               </div>
             </div>
 
-            <div className="col-span-8 grid grid-row-6 mx-auto items-center min-w-6/12">
-              <div className="row-span-2 flex items-center justify-center">
-                <button>play/pause</button>
-
-              </div>
+            <div className="col-span-6 flex mx-auto items-center min-w-6/12">
               <div className="w-full">
-                <InteractiveSlider years={eagle.years} audioContext={audioContext} yearAudios={eagle.yearAudios} healthLevels={eagle.healthLevels} />
+                {activeAnimal === "eagle" && (
+                  <InteractiveSlider years={eagle.years} audioContext={audioContext} yearAudios={eagle.yearAudios} healthLevels={eagle.healthLevels} />
+                )}
+                {activeAnimal === "goose" && (
+                  <InteractiveSlider years={goose.years} audioContext={audioContext} yearAudios={goose.yearAudios} healthLevels={goose.healthLevels} />
+                )}
+                {activeAnimal === "wolverine" && (
+                  <InteractiveSlider years={wolverine.years} audioContext={audioContext} yearAudios={wolverine.yearAudios} healthLevels={wolverine.healthLevels} />
+                )}
+                
               </div>
             </div>
 
