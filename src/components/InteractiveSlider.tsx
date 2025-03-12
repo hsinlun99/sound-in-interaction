@@ -53,17 +53,17 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
     (pos: number) => {
       let nearestIndex = 0;
       let minDistance = 100;
-      
+
       for (let i = 0; i < years.length; i++) {
         const exactPosition = (i / (years.length - 1)) * 100;
         const distance = Math.abs(pos - exactPosition);
-        
+
         if (distance < minDistance) {
           minDistance = distance;
           nearestIndex = i;
         }
       }
-      
+
       return nearestIndex;
     },
     [years]
@@ -202,10 +202,10 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
   const startAllAudio = () => {
     if (!audioContext) return;
 
-    // console.log("Starting all audio sources");
-
     // First, ensure all previous sources are stopped
     stopAllAudio();
+
+    // Temporarily disable volume updates during fade-in
 
     const updatedSources = audioSourcesRef.current.map(audioData => {
       if (!audioData.buffer || !audioContext) return audioData;
@@ -214,45 +214,60 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
       const source = audioContext.createBufferSource();
       source.buffer = audioData.buffer;
 
-      // Connect to gain node
-      if (audioData.gainNode) {
-        // Ensure the gain node is reconnected to the destination
-        audioData.gainNode.disconnect();
-        audioData.gainNode.connect(audioContext.destination);
+      // Create a fresh gain node
+      const gainNode = audioContext.createGain();
+      gainNode.connect(audioContext.destination);
 
-        // Connect the analyser if it exists
-        if (audioData.analyser) {
-          audioData.gainNode.disconnect();
-          audioData.gainNode.connect(audioContext.destination);
-          audioData.gainNode.connect(audioData.analyser);
-          source.connect(audioData.gainNode);
-        }
-
-
-
-        source.connect(audioData.gainNode);
-
-        // Set initial volume based on position
-        const volume = calculateVolume(audioData.year, position);
-        audioData.gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
-        // console.log(`Set initial volume for ${audioData.audioPath}: ${volume}`);
+      // Connect analyzer if it exists
+      if (audioData.analyser) {
+        gainNode.connect(audioData.analyser);
       }
+
+      // Connect source to gain node
+      source.connect(gainNode);
+
+      // IMPORTANT: Start with ZERO volume
+      gainNode.gain.value = 0;
 
       // Start playback
       source.start(0);
       source.loop = true;
 
-      // console.log(`Started playback for ${audioData.audioPath}`);
-
       return {
         ...audioData,
         source,
+        gainNode,
         isPlaying: true
       };
     });
 
     setAudioSources(updatedSources);
     audioSourcesRef.current = updatedSources;
+
+    // Start with all volumes at zero, then manually fade them in
+    // This is a manual fade approach that works regardless of browser automation limitations
+    const fadeStartTime = audioContext.currentTime;
+    const fadeDuration = 2.0; // Longer duration to make it more noticeable
+
+    // Create a manual fade using a timer
+    const fadeInterval = setInterval(() => {
+      const elapsedTime = audioContext.currentTime - fadeStartTime;
+      const fadeProgress = Math.min(elapsedTime / fadeDuration, 1.0);
+
+      if (fadeProgress >= 1.0) {
+        clearInterval(fadeInterval);
+        return;
+      }
+
+      // Apply fade to all sources
+      audioSourcesRef.current.forEach(audioData => {
+        if (audioData.gainNode && audioData.isPlaying) {
+          const targetVolume = calculateVolume(audioData.year, position);
+          const currentFadeVolume = targetVolume * fadeProgress;
+          audioData.gainNode.gain.value = currentFadeVolume;
+        }
+      });
+    }, 50); // Update every 50ms for smooth fade
 
     // Start the audio analysis loop
     startAudioAnalysis();
@@ -293,35 +308,35 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
   // Function to analyze audio data and update volume levels
   const analyzeAudio = useCallback(() => {
     if (!isPlaying || !audioContext) return;
-  
+
     let maxVolume = 0;
     let dataAvailable = false;
-  
+
     // Iterate over all audio sources
     audioSourcesRef.current.forEach((audioData) => {
       // filter out non-heartbeat audio
       if (!audioData.analyser || !audioData.isPlaying || !audioData.isHeartbeat) return;
-  
+
       const dataArray = new Uint8Array(audioData.analyser.frequencyBinCount);
       audioData.analyser.getByteFrequencyData(dataArray);
-  
+
       const lowerBandEnd = Math.floor(dataArray.length * 0.3);
-  
+
       let sum = 0;
       let peakIntensity = 0;
       for (let i = 0; i < lowerBandEnd; i++) {
         sum += dataArray[i];
         peakIntensity = Math.max(peakIntensity, dataArray[i]);
       }
-  
+
       const avgVolume = sum / lowerBandEnd / 255;
       const weightedVolume = (avgVolume * 0.5) + (peakIntensity / 255 * 0.5);
-  
+
       // get the loudest heatbeat
       maxVolume = Math.max(maxVolume, weightedVolume);
       dataAvailable = true;
     });
-  
+
     // Update volume
     if (dataAvailable) {
       const enhancedVolume = Math.pow(maxVolume, 0.3);
@@ -329,7 +344,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
         return prevVolume * 0.4 + enhancedVolume * 0.6;
       });
     }
-  
+
     animationFrameRef.current = requestAnimationFrame(analyzeAudio);
   }, [isPlaying, audioContext]);
 
