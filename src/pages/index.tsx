@@ -57,8 +57,7 @@ export default function Home() {
 
               </div>
               <div className="w-full">
-                <InteractiveSlider years={eagle.years} audioContext={audioContext} />
-
+                <InteractiveSlider years={eagle.years} audioContext={audioContext} yearAudios={eagle.yearAudios} />
               </div>
             </div>
 
