@@ -12,7 +12,7 @@ const AnimalFact: React.FC<AnimalFactProps> = ({ animalId, facts }) => {
   useEffect(() => {
     const intervalId = setInterval(() => {
       setCurrentFactIndex((currentFactIndex + 1) % facts.length);
-    }, 5000);
+    }, 10000);
 
     return () => clearInterval(intervalId);
   }, [currentFactIndex, facts.length]);
