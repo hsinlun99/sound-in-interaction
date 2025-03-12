@@ -100,7 +100,7 @@ export default function Home() {
           </div>
 
 
-          <div className="col-span-3 flex items-start justify-end">
+          <div>
             <ModeToggler isAnswerShown={isAnswerShown} setIsAnswerShown={setIsAnswerShown} />
           </div>
 
