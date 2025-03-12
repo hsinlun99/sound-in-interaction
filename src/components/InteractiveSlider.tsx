@@ -1,11 +1,14 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import PlayButton from "./PlayButton";
+import PopulationGraph from "./PopulationPlot";
 
 interface InteractiveSliderProps {
   audioContext: AudioContext | null;
   years: number[];
   yearAudios: string[]; // Array of audio file paths matching the years array
   healthLevels: string[];
+  population: number[];
+  yLabels: number[];
 }
 
 interface AudioSource {
@@ -17,10 +20,10 @@ interface AudioSource {
   audioPath: string;
 }
 
-const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioContext, yearAudios, healthLevels }) => {
+const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioContext, yearAudios, healthLevels, population, yLabels }) => {
   const [position, setPosition] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [, setAudioSources] = useState<AudioSource[]>([]);
+  const [audioSources, setAudioSources] = useState<AudioSource[]>([]);
   const audioSourcesRef = useRef<AudioSource[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -259,6 +262,9 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
             <PlayButton isPlaying={isPlaying} selectedYearIndex={currentIndex} healthLevels={healthLevels} isAnswerShown={true} />
           </button>
         )}
+
+        {/* Population graph */}
+        <PopulationGraph population={population} healthLevels={healthLevels} yLabels={yLabels} />
 
         {/* Slider track */}
         <div className="relative w-full h-2 bg-gray-200 rounded-full mb-2">

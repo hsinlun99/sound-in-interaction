@@ -70,13 +70,13 @@ export default function Home() {
             <div className="col-span-6 flex mx-auto items-center min-w-6/12">
               <div className="w-full">
                 {activeAnimal === "eagle" && (
-                  <InteractiveSlider years={eagle.years} audioContext={audioContext} yearAudios={eagle.yearAudios} healthLevels={eagle.healthLevels} />
+                  <InteractiveSlider years={eagle.years} audioContext={audioContext} yearAudios={eagle.yearAudios} healthLevels={eagle.healthLevels} population={eagle.population} yLabels={eagle.yLabels} />
                 )}
                 {activeAnimal === "goose" && (
-                  <InteractiveSlider years={goose.years} audioContext={audioContext} yearAudios={goose.yearAudios} healthLevels={goose.healthLevels} />
+                  <InteractiveSlider years={goose.years} audioContext={audioContext} yearAudios={goose.yearAudios} healthLevels={goose.healthLevels} population={goose.population} yLabels={goose.yLabels} />
                 )}
                 {activeAnimal === "wolverine" && (
-                  <InteractiveSlider years={wolverine.years} audioContext={audioContext} yearAudios={wolverine.yearAudios} healthLevels={wolverine.healthLevels} />
+                  <InteractiveSlider years={wolverine.years} audioContext={audioContext} yearAudios={wolverine.yearAudios} healthLevels={wolverine.healthLevels} population={wolverine.population} yLabels={wolverine.yLabels} />
                 )}
                 
               </div>

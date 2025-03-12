@@ -22,9 +22,7 @@ const PopulationGraph: React.FC<PopulationGraphProps> = ({ population, yLabels, 
   };
   
   return (
-    <div className="relative w-full p-4 mb-10 bg-gray-50 rounded-lg h-64">
-      <h3 className="text-lg font-medium mb-4">Population Distribution</h3>
-      
+    <div className="relative w-full p-4 mb-10 bg-gray-50 rounded-lg h-54">
       <div className="relative h-48">
         {/* Grid lines */}
         <div className="flex flex-col justify-between h-full w-full">
@@ -54,11 +52,11 @@ const PopulationGraph: React.FC<PopulationGraphProps> = ({ population, yLabels, 
             >
               <div
                 className={`w-4 h-4 ${
-                  healthLevels[idx] === 'level-1' ? 'bg-red-500' :
-                  healthLevels[idx] === 'level-2' ? 'bg-orange-500' :
-                  healthLevels[idx] === 'level-3' ? 'bg-yellow-500' :
-                  healthLevels[idx] === 'level-4' ? 'bg-blue-500' :
-                  healthLevels[idx] === 'level-5' ? 'bg-green-500' :
+                  healthLevels[idx] === 'level-1' ? 'bg-level-1' :
+                  healthLevels[idx] === 'level-2' ? 'bg-level-2' :
+                  healthLevels[idx] === 'level-3' ? 'bg-level-3' :
+                  healthLevels[idx] === 'level-4' ? 'bg-level-4' :
+                  healthLevels[idx] === 'level-5' ? 'bg-level-5' :
                   'bg-green-400'
                 } rounded-full`}
                 title={`Population: ${pop}`}
@@ -66,11 +64,6 @@ const PopulationGraph: React.FC<PopulationGraphProps> = ({ population, yLabels, 
             </div>
           );
         })}
-      </div>
-      
-      <div className="flex justify-between mt-4 text-xs text-gray-500">
-        <div>Min: {minPopulation}</div>
-        <div>Max: {maxPopulation}</div>
       </div>
     </div>
   );
