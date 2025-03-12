@@ -21,7 +21,7 @@ const PlayButton: React.FC<PlayButtonProps> = ({ isPlaying, selectedYearIndex, h
     transformOrigin: 'center center',
     animation: volume > 0.05 ? `heartbeat ${0.6 - (volume * 0.2)}s ease-out infinite` : 'none',
   };
-
+ 
   useEffect(() => {
     // Create a dynamic style element for the keyframe animation
     const styleElement = document.createElement('style');
