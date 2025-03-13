@@ -32,6 +32,8 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
   const [isLoading, setIsLoading] = useState(true);
   const [currentVolume, setCurrentVolume] = useState(0); // Track the current volume
   const animationFrameRef = useRef<number | null>(null); // For animation frame
+  const [isDragging, setIsDragging] = useState(false);
+  const sliderRef = useRef<HTMLDivElement>(null);
 
   // Calculate current year index
   const getYearIndex = useCallback(
@@ -104,6 +106,79 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
       }, 10);
     }
   };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    updatePositionFromEvent(e);
+  };
+
+  // Update position while dragging
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging || !sliderRef.current) return;
+    updatePositionFromEvent(e);
+  }, [isDragging]);
+
+  // Stop dragging
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Handle click anywhere on the slider track
+  const handleTrackClick = (e: React.MouseEvent) => {
+    if (!sliderRef.current) return;
+    updatePositionFromEvent(e);
+  };
+
+  // Common function to calculate position from mouse events
+  const updatePositionFromEvent = (e: MouseEvent | React.MouseEvent) => {
+    if (!sliderRef.current) return;
+
+    const rect = sliderRef.current.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const newPosition = Math.max(0, Math.min(100, (offsetX / rect.width) * 100));
+
+    setPosition(newPosition);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsDragging(true);
+    updatePositionFromTouchEvent(e);
+  };
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (!isDragging || !sliderRef.current) return;
+    updatePositionFromTouchEvent(e);
+  }, [isDragging]);
+
+  const handleTouchEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  const updatePositionFromTouchEvent = (e: TouchEvent | React.TouchEvent) => {
+    if (!sliderRef.current || !e.touches[0]) return;
+
+    const rect = sliderRef.current.getBoundingClientRect();
+    const offsetX = e.touches[0].clientX - rect.left;
+    const newPosition = Math.max(0, Math.min(100, (offsetX / rect.width) * 100));
+
+    setPosition(newPosition);
+  };
+
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleTouchMove);
+      window.addEventListener('touchend', handleTouchEnd);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
 
   // Load audio files
   useEffect(() => {
@@ -424,7 +499,7 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
 
         // 立即應用音量變化
         audioData.gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
-        // console.log(`Updated volume for ${audioData.audioPath}: ${volume}`);
+        console.log(`Updated volume for ${audioData.audioPath}: ${volume}`);
 
         return {
           ...audioData,
@@ -491,7 +566,12 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
         {/* Right content area */}
         <div className="col-span-11">
           {/* Slider track - aligned with grid */}
-          <div className="relative w-full h-2 bg-gray-200 rounded-full mb-2">
+          <div
+            ref={sliderRef}
+            className="relative w-full h-2 bg-gray-200 rounded-full mb-2 cursor-pointer"
+            onClick={handleTrackClick}
+            onTouchStart={handleTouchStart}
+          >
             {/* Tick marks for each year */}
             <div className="absolute w-full h-0" style={{ top: '10px' }}>
               {years.map((_, index) => {
@@ -509,8 +589,10 @@ const InteractiveSlider: React.FC<InteractiveSliderProps> = ({ years, audioConte
             </div>
             {/* Slider thumb */}
             <div
-              className="absolute w-6 h-6 bg-blue-500 rounded-full -ml-3 -mt-2 cursor-pointer shadow-md hover:bg-blue-600 transition-colors z-10"
+              className="absolute w-6 h-6 bg-blue-500 rounded-full -ml-3 -mt-2 cursor-grab shadow-md hover:bg-blue-600 transition-colors z-10"
               style={{ left: `${position}%` }}
+              onMouseDown={handleMouseDown}
+              onTouchStart={handleTouchStart}
             ></div>
           </div>
 
